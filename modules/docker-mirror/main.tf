@@ -25,7 +25,7 @@ resource "aws_instance" "default" {
 
   iam_instance_profile = aws_iam_instance_profile.instance.name
 
-  user_data = file("${path.module}/../shared/startup-script.sh")
+  user_data = file("${path.module}/startup-script.sh")
 }
 
 resource "aws_eip" "static" {
