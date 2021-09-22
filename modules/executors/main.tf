@@ -181,55 +181,132 @@ resource "aws_autoscaling_group" "autoscaler" {
   }
 }
 
-# TODO(efritz) - replace with a sensible alarm
-resource "aws_cloudwatch_metric_alarm" "alarm" {
+resource "aws_cloudwatch_metric_alarm" "scale_out_alarm" {
   # Don't create this resource when autoscaling is disabled.
   count = local.autoscaling ? 1 : 0
 
-  alarm_name          = "${local.prefix}executor_queue_scaling_trigger"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = "1"
-  metric_name         = "src_executors_queue_size"
-  namespace           = "sourcegraph-executor"
-  period              = "60"
-  statistic           = "Maximum"
-  threshold           = "-1"
-  dimensions = {
-    "environment" = var.metrics_environment_label
-    "queueName"   = var.executor_queue_name
-  }
+  alarm_name                = "${local.prefix}executor_queue_scale_out_trigger"
+  comparison_operator       = "GreaterThanThreshold"
+  threshold                 = "0"
+  evaluation_periods        = "1"
+  alarm_description         = "Alarms when the executor instances are deployed with insufficient capacity."
+  alarm_actions             = [aws_autoscaling_policy.scale_out[0].arn]
   datapoints_to_alarm       = 1
-  alarm_actions             = [aws_autoscaling_policy.always_on[0].arn]
   insufficient_data_actions = []
-}
 
-resource "aws_autoscaling_policy" "always_on" {
-  # Don't create this resource when autoscaling is disabled.
-  count = local.autoscaling ? 1 : 0
+  metric_query {
+    id = "utilizationMetric"
 
-  name = "${local.prefix}executor_queue_scaling"
-
-  # Generate step adjustments. This is a workaround for not needing a utilization metric for now.
-  step_adjustment {
-    scaling_adjustment          = var.min_replicas
-    metric_interval_upper_bound = var.min_replicas + 1
+    expression  = "CEIL(queueSize / ${var.jobs_per_instance_scaling}) - FILL(instanceCount, 0)"
+    label       = "The target number of instances to add to efficiently process the queue at its current size."
+    return_data = "true"
   }
-  dynamic "step_adjustment" {
-    for_each = range(var.min_replicas, var.max_replicas - 1)
-    content {
-      scaling_adjustment          = step_adjustment.value + 1
-      metric_interval_lower_bound = var.jobs_per_instance_scaling * step_adjustment.value + 1
-      metric_interval_upper_bound = var.jobs_per_instance_scaling * (step_adjustment.value + 1) + 1
+
+  metric_query {
+    id = "queueSize"
+
+    metric {
+      metric_name = "src_executors_queue_size"
+      namespace   = "sourcegraph-executor"
+      period      = "60"
+      stat        = "Maximum"
+      unit        = "Count"
+
+      dimensions = {
+        "environment" = var.metrics_environment_label
+        "queueName"   = var.executor_queue_name
+      }
     }
   }
-  step_adjustment {
-    scaling_adjustment          = var.max_replicas
-    metric_interval_lower_bound = var.jobs_per_instance_scaling * (var.max_replicas - 1) + 1
+
+  metric_query {
+    id = "instanceCount"
+
+    metric {
+      metric_name = "GroupTotalInstances"
+      namespace   = "AWS/AutoScaling"
+      period      = "60"
+      stat        = "Maximum"
+      unit        = "Count"
+
+      dimensions = {
+        "AutoScalingGroupName" = "${local.prefix}executors"
+      }
+    }
+  }
+}
+
+resource "aws_autoscaling_policy" "scale_out" {
+  # Don't create this resource when autoscaling is disabled.
+  count = local.autoscaling ? 1 : 0
+
+  name                   = "${local.prefix}executor_queue_scale_out"
+  autoscaling_group_name = aws_autoscaling_group.autoscaler.name
+  adjustment_type        = "ChangeInCapacity"
+  scaling_adjustment     = 1
+}
+
+resource "aws_cloudwatch_metric_alarm" "scale_in_alarm" {
+  # Don't create this resource when autoscaling is disabled.
+  count = local.autoscaling ? 1 : 0
+
+  alarm_name                = "${local.prefix}executor_queue_scale_in_trigger"
+  comparison_operator       = "LessThanThreshold"
+  threshold                 = "0"
+  evaluation_periods        = "1"
+  alarm_description         = "Alarms when the executor instances are deployed with excess capacity."
+  alarm_actions             = [aws_autoscaling_policy.scale_in[0].arn]
+  datapoints_to_alarm       = 1
+  insufficient_data_actions = []
+
+  metric_query {
+    id = "utilizationMetric"
+
+    expression  = "CEIL(queueSize / ${var.jobs_per_instance_scaling}) - FILL(instanceCount, 0)"
+    label       = "The target number of instances that can be removed and continue to efficiently process the queue at its current size."
+    return_data = "true"
   }
 
-  policy_type               = "StepScaling"
-  adjustment_type           = "ExactCapacity"
-  estimated_instance_warmup = 60
-  metric_aggregation_type   = "Maximum"
-  autoscaling_group_name    = aws_autoscaling_group.autoscaler.name
+  metric_query {
+    id = "queueSize"
+
+    metric {
+      metric_name = "src_executors_queue_size"
+      namespace   = "sourcegraph-executor"
+      period      = "60"
+      stat        = "Maximum"
+      unit        = "Count"
+
+      dimensions = {
+        "environment" = var.metrics_environment_label
+        "queueName"   = var.executor_queue_name
+      }
+    }
+  }
+
+  metric_query {
+    id = "instanceCount"
+
+    metric {
+      metric_name = "GroupTotalInstances"
+      namespace   = "AWS/AutoScaling"
+      period      = "60"
+      stat        = "Maximum"
+      unit        = "Count"
+
+      dimensions = {
+        "AutoScalingGroupName" = "${local.prefix}executors"
+      }
+    }
+  }
+}
+
+resource "aws_autoscaling_policy" "scale_in" {
+  # Don't create this resource when autoscaling is disabled.
+  count = local.autoscaling ? 1 : 0
+
+  name                   = "${local.prefix}executor_queue_scale_in"
+  autoscaling_group_name = aws_autoscaling_group.autoscaler.name
+  adjustment_type        = "ChangeInCapacity"
+  scaling_adjustment     = -1
 }
