@@ -195,14 +195,6 @@ resource "aws_cloudwatch_metric_alarm" "scale_out_alarm" {
   insufficient_data_actions = []
 
   metric_query {
-    id = "utilizationMetric"
-
-    expression  = "CEIL(queueSize / ${var.jobs_per_instance_scaling}) - FILL(instanceCount, 0)"
-    label       = "The target number of instances to add to efficiently process the queue at its current size."
-    return_data = "true"
-  }
-
-  metric_query {
     id = "queueSize"
 
     metric {
@@ -233,6 +225,14 @@ resource "aws_cloudwatch_metric_alarm" "scale_out_alarm" {
         "AutoScalingGroupName" = "${local.prefix}executors"
       }
     }
+  }
+
+  metric_query {
+    id = "utilizationMetric"
+
+    expression  = "CEIL(queueSize / ${var.jobs_per_instance_scaling}) - FILL(instanceCount, 0)"
+    label       = "The target number of instances to add to efficiently process the queue at its current size."
+    return_data = "true"
   }
 }
 
@@ -260,14 +260,6 @@ resource "aws_cloudwatch_metric_alarm" "scale_in_alarm" {
   insufficient_data_actions = []
 
   metric_query {
-    id = "utilizationMetric"
-
-    expression  = "CEIL(queueSize / ${var.jobs_per_instance_scaling}) - FILL(instanceCount, 0)"
-    label       = "The target number of instances that can be removed and continue to efficiently process the queue at its current size."
-    return_data = "true"
-  }
-
-  metric_query {
     id = "queueSize"
 
     metric {
@@ -298,6 +290,14 @@ resource "aws_cloudwatch_metric_alarm" "scale_in_alarm" {
         "AutoScalingGroupName" = "${local.prefix}executors"
       }
     }
+  }
+
+  metric_query {
+    id = "utilizationMetric"
+
+    expression  = "CEIL(queueSize / ${var.jobs_per_instance_scaling}) - FILL(instanceCount, 0)"
+    label       = "The target number of instances that can be removed and continue to efficiently process the queue at its current size."
+    return_data = "true"
   }
 }
 
