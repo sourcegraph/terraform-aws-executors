@@ -202,7 +202,6 @@ resource "aws_cloudwatch_metric_alarm" "scale_out_alarm" {
       namespace   = "sourcegraph-executor"
       period      = "60"
       stat        = "Maximum"
-      unit        = "Count"
 
       dimensions = {
         "environment" = var.metrics_environment_label
@@ -219,7 +218,6 @@ resource "aws_cloudwatch_metric_alarm" "scale_out_alarm" {
       namespace   = "AWS/AutoScaling"
       period      = "60"
       stat        = "Maximum"
-      unit        = "Count"
 
       dimensions = {
         "AutoScalingGroupName" = "${local.prefix}executors"
@@ -267,7 +265,6 @@ resource "aws_cloudwatch_metric_alarm" "scale_in_alarm" {
       namespace   = "sourcegraph-executor"
       period      = "60"
       stat        = "Maximum"
-      unit        = "Count"
 
       dimensions = {
         "environment" = var.metrics_environment_label
@@ -284,7 +281,6 @@ resource "aws_cloudwatch_metric_alarm" "scale_in_alarm" {
       namespace   = "AWS/AutoScaling"
       period      = "60"
       stat        = "Maximum"
-      unit        = "Count"
 
       dimensions = {
         "AutoScalingGroupName" = "${local.prefix}executors"
