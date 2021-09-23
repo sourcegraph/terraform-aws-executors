@@ -228,7 +228,7 @@ resource "aws_cloudwatch_metric_alarm" "scale_out_alarm" {
   metric_query {
     id = "utilizationMetric"
 
-    expression  = "CEIL(queueSize / ${var.jobs_per_instance_scaling}) - FILL(instanceCount, 0)"
+    expression  = "CEIL(queueSize / ${var.jobs_per_instance_scaling}) - instanceCount"
     label       = "The target number of instances to add to efficiently process the queue at its current size."
     return_data = "true"
   }
@@ -291,7 +291,7 @@ resource "aws_cloudwatch_metric_alarm" "scale_in_alarm" {
   metric_query {
     id = "utilizationMetric"
 
-    expression  = "CEIL(queueSize / ${var.jobs_per_instance_scaling}) - FILL(instanceCount, 0)"
+    expression  = "CEIL(queueSize / ${var.jobs_per_instance_scaling}) - instanceCount"
     label       = "The target number of instances that can be removed and continue to efficiently process the queue at its current size."
     return_data = "true"
   }
