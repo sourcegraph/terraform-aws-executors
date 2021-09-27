@@ -1,6 +1,7 @@
 locals {
-  autoscaling = var.min_replicas != var.max_replicas
-  prefix      = var.resource_prefix != "" ? "${var.resource_prefix}_sourcegraph_" : "sourcegraph_"
+  autoscaling        = var.min_replicas != var.max_replicas
+  prefix             = var.resource_prefix != "" ? "${var.resource_prefix}_sourcegraph_" : "sourcegraph_"
+  scaling_expression = "CEIL(queueSize / ${var.jobs_per_instance_scaling}) - instanceCount"
 }
 
 data "aws_iam_policy" "cloudwatch" {
@@ -228,7 +229,7 @@ resource "aws_cloudwatch_metric_alarm" "scale_out_alarm" {
   metric_query {
     id = "utilizationMetric"
 
-    expression  = "CEIL(queueSize / ${var.jobs_per_instance_scaling}) - instanceCount"
+    expression  = local.scaling_expression
     label       = "The target number of instances to add to efficiently process the queue at its current size."
     return_data = "true"
   }
@@ -291,7 +292,7 @@ resource "aws_cloudwatch_metric_alarm" "scale_in_alarm" {
   metric_query {
     id = "utilizationMetric"
 
-    expression  = "CEIL(queueSize / ${var.jobs_per_instance_scaling}) - instanceCount"
+    expression  = local.scaling_expression
     label       = "The target number of instances that can be removed and continue to efficiently process the queue at its current size."
     return_data = "true"
   }
