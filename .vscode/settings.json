@@ -1,5 +1,4 @@
 {
-  "editor.formatOnSave": true,
   "files.exclude": {
     "**/.git": true,
     "**/.svn": true,
@@ -8,5 +7,7 @@
     "**/.DS_Store": true,
     "**/Thumbs.db": true,
     "plan": true
-  }
+  },
+  "editor.formatOnSave": true,
+  "shellformat.flag": "-i 2 -ci",
 }
