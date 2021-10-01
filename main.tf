@@ -19,12 +19,12 @@ data "aws_ami" "ubuntu" {
 }
 
 module "aws-networking" {
-  source            = "./modules/networking/aws"
+  source            = "./modules/networking"
   availability_zone = local.availability_zone
 }
 
 module "aws-docker-mirror" {
-  source = "./modules/docker-mirror/aws"
+  source = "./modules/docker-mirror"
 
   availability_zone = local.availability_zone
   vpc_id            = module.aws-networking.vpc_id
@@ -34,7 +34,7 @@ module "aws-docker-mirror" {
 }
 
 module "aws-executor" {
-  source = "./modules/executors/aws"
+  source = "./modules/executors"
 
   vpc_id    = module.aws-networking.vpc_id
   subnet_id = module.aws-networking.subnet_id
