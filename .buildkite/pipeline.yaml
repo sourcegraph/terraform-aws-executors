@@ -1,6 +1,8 @@
 steps:
   - label: ":lipstick:"
     command: .buildkite/shfmt.sh
+  - label: ":lipstick:"
+    command: .buildkite/terraform-fmt.sh
   - label: ":lint-roller:"
     command: .buildkite/shellcheck.sh
   - label: ":terraform:"

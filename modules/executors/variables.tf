@@ -8,82 +8,10 @@ variable "subnet_id" {
   description = "The ID of the subnet within the given VPC to run the instance in."
 }
 
-variable "executor_queue_name" {
-  type        = string
-  description = "The queue from which the executor should dequeue jobs."
-}
-
-variable "executor_tag" {
-  type        = string
-  description = "A label tag to add to all the executors. Can be used for filtering out the right instances in stackdriver monitoring."
-}
-
-variable "metrics_environment_label" {
-  type        = string
-  description = "The value for environment by which to filter the custom metrics."
-}
-
-variable "sourcegraph_external_url" {
-  type        = string
-  description = "The externally accessible URL of the target Sourcegraph instance."
-}
-
-variable "sourcegraph_executor_proxy_username" {
-  type        = string
-  description = "The shared username used to authenticate requests to the internal executor proxy."
-}
-
-variable "sourcegraph_executor_proxy_password" {
-  type        = string
-  description = "The shared password used to authenticate requests to the internal executor proxy."
-}
-
-variable "executor_docker_registry_mirror" {
+variable "resource_prefix" {
   type        = string
   default     = ""
-  description = "A URL to a docker registry mirror to use (falling back to docker.io)."
-}
-
-variable "executor_maximum_runtime_per_job" {
-  type        = string
-  default     = "30m"
-  description = "The maximum wall time that can be spent on a single job"
-}
-
-variable "executor_maximum_num_jobs" {
-  type        = number
-  default     = 1
-  description = "The number of jobs to run concurrently per executor instance"
-}
-
-variable "executor_num_total_jobs" {
-  type        = string
-  default     = ""
-  description = "The maximum number of jobs that will be dequeued by the worker"
-}
-
-variable "executor_max_active_time" {
-  type        = string
-  default     = ""
-  description = "The maximum time that can be spent by the worker dequeueing records to be handled"
-}
-
-variable "executor_firecracker_num_cpus" {
-  type        = number
-  default     = 4
-  description = "The number of CPUs to give to each firecracker VM"
-}
-
-variable "executor_firecracker_memory" {
-  type        = string
-  default     = "12GB"
-  description = "The amount of memory to give to each firecracker VM"
-}
-
-variable "executor_firecracker_disk_space" {
-  type        = string
-  default     = "20GB"
-  description = "The amount of disk space to give to each firecracker VM"
+  description = "An optional prefix to add to all resources created."
 }
 
 variable "machine_image" {
@@ -109,6 +37,85 @@ variable "preemptible_machines" {
   description = "Whether to use preemptible machines instead of standard machines; usually way cheaper but might be terminated at any time"
 }
 
+variable "instance_tag" {
+  type        = string
+  description = "A label tag to add to all the executors. Can be used for filtering out the right instances in stackdriver monitoring."
+}
+
+variable "ssh_access_cidr_range" {
+  type        = string
+  default     = "0.0.0.0/0"
+  description = "CIDR range from where SSH access to the EC2 instances is acceptable."
+}
+
+variable "http_access_cidr_range" {
+  type        = string
+  default     = "0.0.0.0/0"
+  description = "CIDR range from where HTTP access to the metrics endpoint is acceptable."
+}
+
+variable "sourcegraph_external_url" {
+  type        = string
+  description = "The externally accessible URL of the target Sourcegraph instance."
+}
+
+variable "sourcegraph_executor_proxy_username" {
+  type        = string
+  description = "The shared username used to authenticate requests to the internal executor proxy."
+}
+
+variable "sourcegraph_executor_proxy_password" {
+  type        = string
+  description = "The shared password used to authenticate requests to the internal executor proxy."
+}
+
+variable "queue_name" {
+  type        = string
+  description = "The queue from which the executor should dequeue jobs."
+}
+
+variable "maximum_runtime_per_job" {
+  type        = string
+  default     = "30m"
+  description = "The maximum wall time that can be spent on a single job"
+}
+
+variable "maximum_num_jobs" {
+  type        = number
+  default     = 1
+  description = "The number of jobs to run concurrently per executor instance"
+}
+
+variable "num_total_jobs" {
+  type        = string
+  default     = ""
+  description = "The maximum number of jobs that will be dequeued by the worker"
+}
+
+variable "max_active_time" {
+  type        = string
+  default     = ""
+  description = "The maximum time that can be spent by the worker dequeueing records to be handled"
+}
+
+variable "firecracker_num_cpus" {
+  type        = number
+  default     = 4
+  description = "The number of CPUs to give to each firecracker VM"
+}
+
+variable "firecracker_memory" {
+  type        = string
+  default     = "12GB"
+  description = "The amount of memory to give to each firecracker VM"
+}
+
+variable "firecracker_disk_space" {
+  type        = string
+  default     = "20GB"
+  description = "The amount of disk space to give to each firecracker VM"
+}
+
 variable "min_replicas" {
   type        = number
   default     = 1
@@ -127,20 +134,13 @@ variable "jobs_per_instance_scaling" {
   description = "The amount of jobs a single instance should have in queue. Used for autoscaling."
 }
 
-variable "ssh_access_cidr_range" {
+variable "metrics_environment_label" {
   type        = string
-  default     = "0.0.0.0/0"
-  description = "CIDR range from where SSH access to the EC2 instances is acceptable from."
+  description = "The value for environment by which to filter the custom metrics."
 }
 
-variable "http_access_cidr_range" {
-  type        = string
-  default     = "0.0.0.0/0"
-  description = "CIDR range from where HTTP access to the metrics endpoint is acceptable from."
-}
-
-variable "resource_prefix" {
+variable "docker_registry_mirror" {
   type        = string
   default     = ""
-  description = "An optional prefix to add to all resources created."
+  description = "A URL to a docker registry mirror to use (falling back to docker.io)."
 }

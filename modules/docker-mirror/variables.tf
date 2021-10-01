@@ -33,11 +33,11 @@ variable "static_ip" {
 variable "ssh_access_cidr_range" {
   type        = string
   default     = "0.0.0.0/0"
-  description = "CIDR range from where SSH access to the EC2 instance is acceptable from."
+  description = "CIDR range from where SSH access to the EC2 instance is acceptable."
 }
 
 variable "http_access_cidr_range" {
   type        = string
   default     = "10.0.0.0/16"
-  description = "CIDR range from where HTTP access to the Docker registry is acceptable from."
+  description = "CIDR range from where HTTP access to the Docker registry is acceptable."
 }

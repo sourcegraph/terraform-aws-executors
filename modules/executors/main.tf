@@ -125,18 +125,18 @@ resource "aws_launch_template" "executor" {
   # Render the startup script using all variables defined.
   user_data = base64encode(templatefile("${path.module}/startup-script.sh.tpl", {
     environment_variables = {
-      "EXECUTOR_DOCKER_REGISTRY_MIRROR"     = var.executor_docker_registry_mirror
+      "EXECUTOR_DOCKER_REGISTRY_MIRROR"     = var.docker_registry_mirror
       "SOURCEGRAPH_EXTERNAL_URL"            = var.sourcegraph_external_url
       "SOURCEGRAPH_EXECUTOR_PROXY_USERNAME" = var.sourcegraph_executor_proxy_username
       "SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD" = var.sourcegraph_executor_proxy_password
-      "EXECUTOR_MAXIMUM_NUM_JOBS"           = var.executor_maximum_num_jobs
-      "EXECUTOR_FIRECRACKER_NUM_CPUS"       = var.executor_firecracker_num_cpus
-      "EXECUTOR_FIRECRACKER_MEMORY"         = var.executor_firecracker_memory
-      "EXECUTOR_FIRECRACKER_DISK_SPACE"     = var.executor_firecracker_disk_space
-      "EXECUTOR_QUEUE_NAME"                 = var.executor_queue_name
-      "EXECUTOR_MAXIMUM_RUNTIME_PER_JOB"    = var.executor_maximum_runtime_per_job
-      "EXECUTOR_NUM_TOTAL_JOBS"             = var.executor_num_total_jobs
-      "EXECUTOR_MAX_ACTIVE_TIME"            = var.executor_max_active_time
+      "EXECUTOR_MAXIMUM_NUM_JOBS"           = var.maximum_num_jobs
+      "EXECUTOR_FIRECRACKER_NUM_CPUS"       = var.firecracker_num_cpus
+      "EXECUTOR_FIRECRACKER_MEMORY"         = var.firecracker_memory
+      "EXECUTOR_FIRECRACKER_DISK_SPACE"     = var.firecracker_disk_space
+      "EXECUTOR_QUEUE_NAME"                 = var.queue_name
+      "EXECUTOR_MAXIMUM_RUNTIME_PER_JOB"    = var.maximum_runtime_per_job
+      "EXECUTOR_NUM_TOTAL_JOBS"             = var.num_total_jobs
+      "EXECUTOR_MAX_ACTIVE_TIME"            = var.max_active_time
     }
   }))
 
@@ -172,7 +172,7 @@ resource "aws_autoscaling_group" "autoscaler" {
   # Used for metrics scraping discovery.
   tag {
     key                 = "executor_tag"
-    value               = var.executor_tag
+    value               = var.instance_tag
     propagate_at_launch = true
   }
 
@@ -206,7 +206,7 @@ resource "aws_cloudwatch_metric_alarm" "scale_out_alarm" {
 
       dimensions = {
         "environment" = var.metrics_environment_label
-        "queueName"   = var.executor_queue_name
+        "queueName"   = var.queue_name
       }
     }
   }
@@ -269,7 +269,7 @@ resource "aws_cloudwatch_metric_alarm" "scale_in_alarm" {
 
       dimensions = {
         "environment" = var.metrics_environment_label
-        "queueName"   = var.executor_queue_name
+        "queueName"   = var.queue_name
       }
     }
   }
