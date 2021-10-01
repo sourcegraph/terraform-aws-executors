@@ -8,6 +8,7 @@ MODULES=(
   ./modules/networking
   ./modules/docker-mirror
   ./modules/executors
+  .
 )
 
 # Ensure terraform validate has a valid region
