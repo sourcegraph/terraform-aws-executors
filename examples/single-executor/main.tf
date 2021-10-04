@@ -1,6 +1,6 @@
 module "executors" {
   source  = "sourcegraph/executors/aws"
-  version = "0.0.7"
+  version = "0.0.8"
 
   region                                       = local.region # REMOVE ME
   availability_zone                            = local.availability_zone
