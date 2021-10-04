@@ -5,9 +5,24 @@ resource "aws_cloudwatch_log_group" "syslogs" {
   retention_in_days = 7
 }
 
+# Datasource to fetch the latest AMI of Ubuntu 20.04 for use in the docker mirror.
+data "aws_ami" "ubuntu" {
+  most_recent = true
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+  # Canonical
+  owners = ["099720109477"]
+}
+
 # The docker registry mirror EC2 instance.
 resource "aws_instance" "default" {
-  ami           = var.machine_ami
+  ami           = coalesce(var.machine_ami, data.aws_ami.ubuntu.id)
   instance_type = var.machine_type
 
   root_block_device {
