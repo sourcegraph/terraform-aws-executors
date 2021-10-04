@@ -122,7 +122,7 @@ variable "executor_maximum_num_jobs" {
 
 variable "executor_num_total_jobs" {
   type        = number
-  default     = "1800"
+  default     = 1800
   description = "The maximum number of jobs that will be dequeued by the worker"
 }
 
