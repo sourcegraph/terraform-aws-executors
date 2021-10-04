@@ -28,7 +28,6 @@ variable "boot_disk_size" {
 
 variable "static_ip" {
   type        = string
-  default     = "10.0.1.4"
   description = "The IP to statically assign to the instance. Should be internal."
 }
 
