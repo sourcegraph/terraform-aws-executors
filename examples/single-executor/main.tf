@@ -6,7 +6,7 @@ locals {
 
 module "executors" {
   source  = "sourcegraph/executors/aws"
-  version = "0.0.8"
+  version = "0.0.9"
 
   availability_zone                            = local.availability_zone
   docker_mirror_static_ip                      = local.docker_mirror_static_ip
