@@ -82,19 +82,19 @@ variable "maximum_runtime_per_job" {
 
 variable "maximum_num_jobs" {
   type        = number
-  default     = 1
+  default     = 18
   description = "The number of jobs to run concurrently per executor instance"
 }
 
 variable "num_total_jobs" {
-  type        = string
-  default     = ""
+  type        = number
+  default     = 1800
   description = "The maximum number of jobs that will be dequeued by the worker"
 }
 
 variable "max_active_time" {
   type        = string
-  default     = ""
+  default     = "2h"
   description = "The maximum time that can be spent by the worker dequeueing records to be handled"
 }
 
@@ -130,7 +130,7 @@ variable "max_replicas" {
 
 variable "jobs_per_instance_scaling" {
   type        = number
-  default     = 20
+  default     = 360
   description = "The amount of jobs a single instance should have in queue. Used for autoscaling."
 }
 
