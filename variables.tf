@@ -152,7 +152,7 @@ variable "executor_firecracker_disk_space" {
 
 variable "executor_min_replicas" {
   type        = number
-  default     = 0
+  default     = 1
   description = "The minimum number of executor instances to run in the autoscaling group."
 }
 
