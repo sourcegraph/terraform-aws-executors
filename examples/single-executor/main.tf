@@ -1,12 +1,10 @@
 module "executors" {
   source  = "sourcegraph/executors/aws"
-  version = "0.0.5"
+  version = "0.0.6"
 
   region                                       = local.region # REMOVE ME
   availability_zone                            = local.availability_zone
   docker_mirror_static_ip                      = local.docker_mirror_static_ip
-  executor_machine_image                       = "TEMP" # REMOVE ME
-  executor_resource_prefix                     = "codeintel-prod"
   executor_instance_tag                        = "codeintel-prod"
   executor_sourcegraph_external_url            = "https://sourcegraph.acme.com"
   executor_sourcegraph_executor_proxy_username = "executor"
