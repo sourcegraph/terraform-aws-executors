@@ -1,18 +1,3 @@
-# Datasource to fetch the latest AMI of Ubuntu 20.04 for use in the docker mirror.
-data "aws_ami" "ubuntu" {
-  most_recent = true
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
-  }
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-  # Canonical
-  owners = ["099720109477"]
-}
-
 module "aws-networking" {
   source = "./modules/networking"
 
@@ -24,7 +9,7 @@ module "aws-docker-mirror" {
 
   vpc_id                 = module.aws-networking.vpc_id
   subnet_id              = module.aws-networking.subnet_id
-  machine_ami            = coalesce(var.docker_mirror_machine_ami, data.aws_ami.ubuntu.id)
+  machine_ami            = var.docker_mirror_machine_ami
   machine_type           = var.docker_mirror_machine_type
   boot_disk_size         = var.docker_mirror_boot_disk_size
   static_ip              = var.docker_mirror_static_ip
