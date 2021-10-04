@@ -1,3 +1,9 @@
+locals {
+  region                  = "us-west-2"
+  availability_zone       = "us-west-2a"
+  docker_mirror_static_ip = "10.0.1.4"
+}
+
 module "networking" {
   source  = "sourcegraph/executors/aws//modules/networking"
   version = "0.0.8"

@@ -1,8 +1,13 @@
+locals {
+  region                  = "us-west-2"
+  availability_zone       = "us-west-2a"
+  docker_mirror_static_ip = "10.0.1.4"
+}
+
 module "executors" {
   source  = "sourcegraph/executors/aws"
   version = "0.0.8"
 
-  region                                       = local.region # REMOVE ME
   availability_zone                            = local.availability_zone
   docker_mirror_static_ip                      = local.docker_mirror_static_ip
   executor_instance_tag                        = "codeintel-prod"
