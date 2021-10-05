@@ -9,6 +9,8 @@ MODULES=(
   ./modules/docker-mirror
   ./modules/executors
   .
+  ./examples/single-executor
+  ./examples/multiple-executors
 )
 
 # Ensure terraform validate has a valid region
