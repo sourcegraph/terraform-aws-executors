@@ -37,7 +37,7 @@ The following variables must be supplied:
 
 If your deployment environment already has a Docker registry that can be used, only the `executor` submodule must be used (and references to the `networking` and `docker-mirror` modules can be dropped). The Docker registry mirror address can be supplied along with its containing vcp and subnet as pre-existing identifier literals.
 
-All of these module's variables are defined in [networking/variables.tf](./variables.tf), [docker-mirror/variables.tf](./docker-mirror/variables.tf), and [executors/variables.tf](./executors/variables.tf).
+All of these module's variables are defined in [modules/networking/variables.tf](./modules/networking/variables.tf), [modules/docker-mirror/variables.tf](./modules/docker-mirror/variables.tf), and [modules/executors/variables.tf](./modules/executors/variables.tf).
 
 ## Requirements
 
