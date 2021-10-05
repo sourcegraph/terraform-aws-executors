@@ -1,4 +1,4 @@
-# Terraform provider for Sourcegraph executors (AWS)
+# Terraform module for Sourcegraph executors (AWS)
 
 This repository provides a [Terraform module](https://learn.hashicorp.com/tutorials/terraform/module-use?in=terraform/modules) to provision Sourcegraph executor compute resources on AWS.
 
