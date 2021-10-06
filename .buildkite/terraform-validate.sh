@@ -8,6 +8,7 @@ MODULES=(
   ./modules/networking
   ./modules/docker-mirror
   ./modules/executors
+  ./modules/credentials
   .
   ./examples/single-executor
   ./examples/multiple-executors
