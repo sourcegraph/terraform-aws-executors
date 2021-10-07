@@ -17,8 +17,7 @@ The following variables must be supplied:
 **Note**: these variables must be set in tandem with changes to the target [Sourcegraph deployment](https://docs.sourcegraph.com/admin/deploy_executors).
 
 - `executor_sourcegraph_external_url`: The URL from which the target Sourcegraph instance is accessible from the executor instances.
-- `executor_sourcegraph_executor_proxy_username`: The shared executor username defined on the Sourcegraph deployment.
-- `executor_sourcegraph_executor_proxy_password`: The shared executor password defined on the Sourcegraph deployment. The username and password values must be the same as the `EXECUTOR_FRONTEND_USERNAME` and `FRONTEND_USERNAME_PASSWORD` environment variables described in [Configuring executors and instance communication](https://docs.sourcegraph.com/admin/deploy_executors#configuring-executors-and-instance-communication).
+- `executor_sourcegraph_executor_proxy_password`: The shared executor password defined in Sourcegraph. The value must be the same as the `executors.accessToken` site setting described in [Configuring executors and instance communication](https://docs.sourcegraph.com/admin/deploy_executors#configuring-executors-and-instance-communication).
 - `executor_queue_name`: The name of the target queue to process (e.g., `codeintel`, `batches`).
 - `executor_metrics_environment_label`: The name of the target environment (e.g., `staging`, `prod`). This value must be the same as the `EXECUTOR_METRIC_ENVIRONMENT_LABEL` environment variable as described in [Configuring auto scaling](https://docs.sourcegraph.com/admin/deploy_executors#aws).
 - `executor_instance_tag`: Compute instances are tagged by this value by the key `executor_tag`. We recommend this value take the form `{executor_queue_name}-{executor_metrics_environment_label}`. This value must be the same as `INSTANCE_TAG` as described in [Configuring observability](https://docs.sourcegraph.com/admin/deploy_executors#aws-1).
@@ -31,7 +30,7 @@ This example uses [networking](https://registry.terraform.io/modules/sourcegraph
 
 The following variables must be supplied:
 
-- `sourcegraph_external_url`, `sourcegraph_executor_proxy_username`, `sourcegraph_executor_proxy_password`, `queue_name`, `metrics_environment_label`, and `instance_tag`: Analogous to the `executor_*` variables in the `single-executor` example.
+- `sourcegraph_external_url`, `sourcegraph_executor_proxy_password`, `queue_name`, `metrics_environment_label`, and `instance_tag`: Analogous to the `executor_*` variables in the `single-executor` example.
 - `resource_prefix`: A prefix unique to each set of compute resources. This prevents collisions between two uses of the `executors` module. We recommend this value be constructed the same way `instance_tag` is constructed.
 - `docker_registry_mirror`: This variable is given the value `"http://${module.docker-mirror.ip_address}:5000"`, which converts the raw external IP address to an address resolvable by the executor instances.
 

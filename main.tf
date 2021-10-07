@@ -31,7 +31,6 @@ module "aws-executor" {
   ssh_access_cidr_range               = var.executor_ssh_access_cidr_range
   http_access_cidr_range              = var.executor_http_access_cidr_range
   sourcegraph_external_url            = var.executor_sourcegraph_external_url
-  sourcegraph_executor_proxy_username = var.executor_sourcegraph_executor_proxy_username
   sourcegraph_executor_proxy_password = var.executor_sourcegraph_executor_proxy_password
   queue_name                          = var.executor_queue_name
   maximum_runtime_per_job             = var.executor_maximum_runtime_per_job

@@ -127,7 +127,6 @@ resource "aws_launch_template" "executor" {
     environment_variables = {
       "EXECUTOR_DOCKER_REGISTRY_MIRROR"     = var.docker_registry_mirror
       "SOURCEGRAPH_EXTERNAL_URL"            = var.sourcegraph_external_url
-      "SOURCEGRAPH_EXECUTOR_PROXY_USERNAME" = var.sourcegraph_executor_proxy_username
       "SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD" = var.sourcegraph_executor_proxy_password
       "EXECUTOR_MAXIMUM_NUM_JOBS"           = var.maximum_num_jobs
       "EXECUTOR_FIRECRACKER_NUM_CPUS"       = var.firecracker_num_cpus
