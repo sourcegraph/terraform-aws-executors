@@ -90,11 +90,6 @@ variable "executor_sourcegraph_external_url" {
   description = "The externally accessible URL of the target Sourcegraph instance."
 }
 
-variable "executor_sourcegraph_executor_proxy_username" {
-  type        = string
-  description = "The shared username used to authenticate requests to the internal executor proxy."
-}
-
 variable "executor_sourcegraph_executor_proxy_password" {
   type        = string
   description = "The shared password used to authenticate requests to the internal executor proxy."
