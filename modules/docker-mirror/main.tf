@@ -16,7 +16,7 @@ resource "aws_instance" "default" {
   }
 
   tags = {
-    "executor_tag" = "${var.instance_tag}-docker-mirror"
+    "executor_tag" = "${var.instance_tag_prefix}-docker-mirror"
   }
 
   monitoring = true

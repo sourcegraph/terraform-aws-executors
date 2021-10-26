@@ -15,7 +15,7 @@ module "aws-docker-mirror" {
   static_ip              = var.docker_mirror_static_ip
   ssh_access_cidr_range  = var.docker_mirror_ssh_access_cidr_range
   http_access_cidr_range = var.docker_mirror_http_access_cidr_range
-  instance_tag           = var.executor_instance_tag
+  instance_tag_prefix    = var.executor_instance_tag
 }
 
 module "aws-executor" {
