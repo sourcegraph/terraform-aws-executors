@@ -10,7 +10,7 @@ variable "subnet_id" {
 
 variable "machine_ami" {
   type        = string
-  default     = ""
+  default     = "ami-testtesttest"
   description = "AMI for the EC2 instance to use. Must be in the same availability zone."
 }
 
@@ -41,4 +41,15 @@ variable "http_access_cidr_range" {
   type        = string
   default     = "10.0.0.0/16"
   description = "CIDR range from where HTTP access to the Docker registry is acceptable."
+}
+
+variable "http_metrics_access_cidr_range" {
+  type        = string
+  default     = "0.0.0.0/0"
+  description = "CIDR range from where HTTP access to scrape metrics from the Docker registry is acceptable."
+}
+
+variable "instance_tag" {
+  type        = string
+  description = "A label tag to add to all the machines; can be used for filtering out the right instances in stackdriver monitoring and in Prometheus instance discovery."
 }

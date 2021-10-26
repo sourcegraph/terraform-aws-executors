@@ -5,29 +5,18 @@ resource "aws_cloudwatch_log_group" "syslogs" {
   retention_in_days = 7
 }
 
-# Datasource to fetch the latest AMI of Ubuntu 20.04 for use in the docker mirror.
-data "aws_ami" "ubuntu" {
-  most_recent = true
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
-  }
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-  # Canonical
-  owners = ["099720109477"]
-}
-
 # The docker registry mirror EC2 instance.
 resource "aws_instance" "default" {
-  ami           = coalesce(var.machine_ami, data.aws_ami.ubuntu.id)
+  ami           = var.machine_ami
   instance_type = var.machine_type
 
   root_block_device {
     volume_size = var.boot_disk_size
     volume_type = "gp2"
+  }
+
+  tags = {
+    "executor_tag" = "${var.instance_tag}-docker-mirror"
   }
 
   monitoring = true
@@ -39,8 +28,6 @@ resource "aws_instance" "default" {
   }
 
   iam_instance_profile = aws_iam_instance_profile.instance.name
-
-  user_data = file("${path.module}/startup-script.sh")
 }
 
 resource "aws_eip" "static" {
@@ -80,6 +67,14 @@ resource "aws_security_group" "default" {
     from_port   = 5000
     protocol    = "TCP"
     to_port     = 5000
+  }
+
+  ingress {
+    cidr_blocks = [var.http_metrics_access_cidr_range]
+    description = "Allow access to Docker registry metrics via exporter_exporter"
+    from_port   = 9999
+    protocol    = "TCP"
+    to_port     = 9999
   }
 
   # Allow all outgoing network traffic.
