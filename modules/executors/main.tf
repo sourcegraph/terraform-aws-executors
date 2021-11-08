@@ -34,11 +34,9 @@ resource "aws_iam_instance_profile" "instance" {
   role = aws_iam_role.cloudwatch-assignment.name
 }
 
-resource "aws_iam_policy_attachment" "cloudwatch" {
+resource "aws_iam_role_policy_attachment" "cloudwatch" {
+  role       = aws_iam_role.cloudwatch-assignment.name
   policy_arn = data.aws_iam_policy.cloudwatch.arn
-  # TODO: this keeps overwriting each other.
-  roles = [aws_iam_role.cloudwatch-assignment.name, "sourcegraph_executors_docker_mirror_cloudwatch"]
-  name  = "${var.resource_prefix}SourcegraphExecutorsCloudWatch"
 }
 
 # Allow access to running instances over SSH and on port 9999 to scrape metrics.
@@ -92,7 +90,7 @@ resource "aws_launch_template" "executor" {
     device_name = "/dev/sda1"
     ebs {
       volume_size = var.boot_disk_size
-      volume_type = "gp2"
+      volume_type = "gp3"
     }
   }
 
