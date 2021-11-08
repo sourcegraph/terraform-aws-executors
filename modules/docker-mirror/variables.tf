@@ -22,8 +22,14 @@ variable "machine_type" {
 
 variable "boot_disk_size" {
   type        = number
-  default     = 64
+  default     = 32
   description = "Docker registry mirror node disk size in GB."
+}
+
+variable "disk_size" {
+  type        = number
+  default     = 64
+  description = "Persistent Docker registry mirror disk size in GB."
 }
 
 variable "static_ip" {
@@ -33,7 +39,7 @@ variable "static_ip" {
 
 variable "ssh_access_cidr_range" {
   type        = string
-  default     = "0.0.0.0/0"
+  default     = "10.0.0.0/16"
   description = "CIDR range from where SSH access to the EC2 instance is acceptable."
 }
 

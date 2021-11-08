@@ -5,6 +5,10 @@ resource "aws_cloudwatch_log_group" "syslogs" {
   retention_in_days = 7
 }
 
+data "aws_subnet" "main" {
+  id = var.subnet_id
+}
+
 # The docker registry mirror EC2 instance.
 resource "aws_instance" "default" {
   ami           = var.machine_ami
@@ -12,7 +16,8 @@ resource "aws_instance" "default" {
 
   root_block_device {
     volume_size = var.boot_disk_size
-    volume_type = "gp2"
+    volume_type = "gp3"
+    encrypted   = true
   }
 
   tags = {
@@ -28,6 +33,22 @@ resource "aws_instance" "default" {
   }
 
   iam_instance_profile = aws_iam_instance_profile.instance.name
+
+  user_data_base64 = base64encode(file("${path.module}/startup-script.sh"))
+}
+
+# Reserve a fixed disk to retain docker mirror data across rollouts.
+resource "aws_ebs_volume" "docker-storage" {
+  availability_zone = data.aws_subnet.main.availability_zone
+  size              = var.disk_size
+  encrypted         = true
+  type              = "gp3"
+}
+
+resource "aws_volume_attachment" "docker-storage" {
+  device_name = "/dev/sdh"
+  volume_id   = aws_ebs_volume.docker-storage.id
+  instance_id = aws_instance.default.id
 }
 
 resource "aws_eip" "static" {
@@ -87,8 +108,8 @@ resource "aws_security_group" "default" {
   }
 }
 
-resource "aws_iam_role" "cloudwatch-assignment" {
-  name = "sourcegraph_executors_docker_mirror_cloudwatch"
+resource "aws_iam_role" "ec2-role" {
+  name = "sourcegraph_executors_docker_mirror"
   path = "/"
 
   assume_role_policy = <<EOF
@@ -109,17 +130,24 @@ EOF
 }
 
 resource "aws_iam_instance_profile" "instance" {
-  name = "sourcegraph_executors_docker_mirror_cloudwatch"
-  role = aws_iam_role.cloudwatch-assignment.name
+  name = "sourcegraph_executors_docker_mirror"
+  role = aws_iam_role.ec2-role.name
 }
 
 data "aws_iam_policy" "cloudwatch" {
   name = "CloudWatchAgentServerPolicy"
 }
 
-resource "aws_iam_policy_attachment" "cloudwatch" {
+resource "aws_iam_role_policy_attachment" "cloudwatch" {
+  role       = aws_iam_role.ec2-role.name
   policy_arn = data.aws_iam_policy.cloudwatch.arn
-  # TODO: this keeps overwriting each other.
-  roles = [aws_iam_role.cloudwatch-assignment.name, "codeintel_cloud_sourcegraph_executors_cloudwatch"]
-  name  = "SourcegraphExecutorsDockerMirrorCloudWatch"
+}
+
+data "aws_iam_policy" "ssm" {
+  name = "AmazonSSMManagedInstanceCore"
+}
+
+resource "aws_iam_role_policy_attachment" "ssm" {
+  role       = aws_iam_role.ec2-role.name
+  policy_arn = data.aws_iam_policy.ssm.arn
 }
