@@ -5,7 +5,7 @@ set -euxo pipefail
 # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/device_naming.html#available-ec2-device-names
 VOLUMES_NAME="$(find /dev -maxdepth 1 | grep -i 'nvme[0-21]n1$')"
 for VOLUME in ${VOLUMES_NAME}; do
-  ALIAS=$(sudo nvme id-ctrl -H -v "${VOLUME}" | grep -Po '/dev/(sd[b-z]|xvd[b-z])')
+  ALIAS=$(sudo nvme id-ctrl -H -v "${VOLUME}" | { grep -Po '/dev/(sd[b-z]|xvd[b-z])' || test $? = 1; })
   if [ -n "${ALIAS}" ]; then
     sudo ln -s "${VOLUME}" "${ALIAS}"
   fi
