@@ -4,12 +4,8 @@ locals {
   scaling_expression = "CEIL(queueSize / ${var.jobs_per_instance_scaling}) - instanceCount"
 }
 
-data "aws_iam_policy" "cloudwatch" {
-  name = "CloudWatchAgentServerPolicy"
-}
-
-resource "aws_iam_role" "cloudwatch-assignment" {
-  name = "${local.prefix}executors_cloudwatch"
+resource "aws_iam_role" "ec2-role" {
+  name = "${local.prefix}_executors"
   path = "/"
 
   assume_role_policy = <<EOF
@@ -30,13 +26,26 @@ EOF
 }
 
 resource "aws_iam_instance_profile" "instance" {
-  name = "${local.prefix}executors_cloudwatch"
-  role = aws_iam_role.cloudwatch-assignment.name
+  name = "sourcegraph_executors"
+  role = aws_iam_role.ec2-role.name
+}
+
+data "aws_iam_policy" "cloudwatch" {
+  name = "CloudWatchAgentServerPolicy"
 }
 
 resource "aws_iam_role_policy_attachment" "cloudwatch" {
-  role       = aws_iam_role.cloudwatch-assignment.name
+  role       = aws_iam_role.ec2-role.name
   policy_arn = data.aws_iam_policy.cloudwatch.arn
+}
+
+data "aws_iam_policy" "ssm" {
+  name = "AmazonSSMManagedInstanceCore"
+}
+
+resource "aws_iam_role_policy_attachment" "ssm" {
+  role       = aws_iam_role.ec2-role.name
+  policy_arn = data.aws_iam_policy.ssm.arn
 }
 
 # Allow access to running instances over SSH and on port 9999 to scrape metrics.
