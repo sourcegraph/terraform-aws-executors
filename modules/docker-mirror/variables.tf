@@ -16,7 +16,7 @@ variable "machine_ami" {
 
 variable "machine_type" {
   type        = string
-  default     = "m5.large" // 2 vCPU, 8GB
+  default     = "m5n.large" // 2 vCPU, 8GB
   description = "Docker registry mirror node machine type."
 }
 
@@ -30,6 +30,18 @@ variable "disk_size" {
   type        = number
   default     = 64
   description = "Persistent Docker registry mirror disk size in GB."
+}
+
+variable "disk_iops" {
+  type        = number
+  default     = 500
+  description = "Persistent Docker registry mirror additional IOPS."
+}
+
+variable "disk_throughput" {
+  type        = number
+  default     = 125
+  description = "Persistent Docker registry mirror disk throughput in MiB/s."
 }
 
 variable "static_ip" {

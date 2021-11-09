@@ -43,6 +43,8 @@ resource "aws_ebs_volume" "docker-storage" {
   size              = var.disk_size
   encrypted         = true
   type              = "gp3"
+  iops              = var.disk_iops
+  throughput        = var.disk_throughput
 }
 
 resource "aws_volume_attachment" "docker-storage" {
