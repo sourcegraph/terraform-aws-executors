@@ -28,8 +28,20 @@ variable "machine_type" {
 
 variable "boot_disk_size" {
   type        = number
-  default     = 100 // 100GB
-  description = "Executor node disk size in GB"
+  default     = 500 // 500GB
+  description = "Executor node disk size in GB."
+}
+
+variable "boot_disk_iops" {
+  type        = number
+  default     = 500
+  description = "Persistent Docker registry mirror additional IOPS."
+}
+
+variable "boot_disk_throughput" {
+  type        = number
+  default     = 125
+  description = "Persistent Docker registry mirror disk throughput in MiB/s."
 }
 
 variable "preemptible_machines" {

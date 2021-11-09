@@ -91,6 +91,8 @@ resource "aws_launch_template" "executor" {
     ebs {
       volume_size = var.boot_disk_size
       volume_type = "gp3"
+      iops        = var.boot_disk_iops
+      throughput  = var.boot_disk_throughput
     }
   }
 
