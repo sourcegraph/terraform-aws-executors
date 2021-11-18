@@ -6,14 +6,14 @@ locals {
 
 module "networking" {
   source  = "sourcegraph/executors/aws//modules/networking"
-  version = "0.0.12"
+  version = "0.0.21"
 
   availability_zone = local.availability_zone
 }
 
 module "docker-mirror" {
   source  = "sourcegraph/executors/aws//modules/docker-mirror"
-  version = "0.0.12"
+  version = "0.0.21"
 
   vpc_id    = module.networking.vpc_id
   subnet_id = module.networking.subnet_id
@@ -22,7 +22,7 @@ module "docker-mirror" {
 
 module "executors-codeintel" {
   source  = "sourcegraph/executors/aws//modules/executors"
-  version = "0.0.12"
+  version = "0.0.21"
 
   vpc_id                              = module.networking.vpc_id
   subnet_id                           = module.networking.subnet_id
@@ -37,7 +37,7 @@ module "executors-codeintel" {
 
 module "executors-batches" {
   source  = "sourcegraph/executors/aws//modules/executors"
-  version = "0.0.12"
+  version = "0.0.21"
 
   vpc_id                              = module.networking.vpc_id
   subnet_id                           = module.networking.subnet_id
