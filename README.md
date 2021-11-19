@@ -6,9 +6,9 @@ This repository provides a [Terraform module](https://learn.hashicorp.com/tutori
 
 ## Usage examples
 
-There are several examples in the [`examples`](./examples) directory.
+There are several examples in the [`examples`](https://github.com/sourcegraph/terraform-aws-executors/blob/master/examples) directory.
 
-#### [`examples/single-executor`](./examples/single-executor)
+#### [`examples/single-executor`](https://github.com/sourcegraph/terraform-aws-executors/blob/master/examples/single-executor)
 
 This example uses the [root module](https://registry.terraform.io/modules/sourcegraph/executors/aws/latest) that provisions a network, a Docker registry mirror, and a set of resources to run _one_ type of executor. To provision more than one type of executor (multiple queues or multiple environments), see the following `multiple-executors` example.
 
@@ -22,9 +22,9 @@ The following variables must be supplied:
 - `executor_metrics_environment_label`: The name of the target environment (e.g., `staging`, `prod`). This value must be the same as the `EXECUTOR_METRIC_ENVIRONMENT_LABEL` environment variable as described in [Configuring auto scaling](https://docs.sourcegraph.com/admin/deploy_executors#aws).
 - `executor_instance_tag`: Compute instances are tagged by this value by the key `executor_tag`. We recommend this value take the form `{executor_queue_name}-{executor_metrics_environment_label}`. This value must be the same as `INSTANCE_TAG` as described in [Configuring observability](https://docs.sourcegraph.com/admin/deploy_executors#aws-1).
 
-All of this module's variables are defined in [variables.tf](./variables.tf).
+All of this module's variables are defined in [variables.tf](https://github.com/sourcegraph/terraform-aws-executors/blob/master/variables.tf).
 
-#### [`examples/multiple-executors`](./examples/multiple-executors)
+#### [`examples/multiple-executors`](https://github.com/sourcegraph/terraform-aws-executors/blob/master/examples/multiple-executors)
 
 This example uses [networking](https://registry.terraform.io/modules/sourcegraph/executors/aws/latest/submodules/networking), [docker-mirror](https://registry.terraform.io/modules/sourcegraph/executors/aws/latest/submodules/docker-mirror), and [executors](https://registry.terraform.io/modules/sourcegraph/executors/aws/latest/submodules/executors) submodules that provision a network, a Docker registry mirror, and sets of resources running one or more types of executors.
 
@@ -36,7 +36,7 @@ The following variables must be supplied:
 
 If your deployment environment already has a Docker registry that can be used, only the `executor` submodule must be used (and references to the `networking` and `docker-mirror` modules can be dropped). The Docker registry mirror address can be supplied along with its containing vcp and subnet as pre-existing identifier literals.
 
-All of these module's variables are defined in [modules/networking/variables.tf](./modules/networking/variables.tf), [modules/docker-mirror/variables.tf](./modules/docker-mirror/variables.tf), and [modules/executors/variables.tf](./modules/executors/variables.tf).
+All of these module's variables are defined in [modules/networking/variables.tf](https://github.com/sourcegraph/terraform-aws-executors/blob/master/modules/networking/variables.tf), [modules/docker-mirror/variables.tf](https://github.com/sourcegraph/terraform-aws-executors/blob/master/modules/docker-mirror/variables.tf), and [modules/executors/variables.tf](https://github.com/sourcegraph/terraform-aws-executors/blob/master/modules/executors/variables.tf).
 
 ## Requirements
 
