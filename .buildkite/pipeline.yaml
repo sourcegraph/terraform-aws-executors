@@ -7,3 +7,5 @@ steps:
     command: .buildkite/shellcheck.sh
   - label: ":terraform:"
     command: .buildkite/terraform-validate.sh
+  - label: ":lint-roller:"
+    command: .buildkite/check-latest-tag.sh
