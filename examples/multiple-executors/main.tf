@@ -15,9 +15,10 @@ module "docker-mirror" {
   source  = "sourcegraph/executors/aws//modules/docker-mirror"
   version = "0.0.21"
 
-  vpc_id    = module.networking.vpc_id
-  subnet_id = module.networking.subnet_id
-  static_ip = local.docker_mirror_static_ip
+  vpc_id              = module.networking.vpc_id
+  subnet_id           = module.networking.subnet_id
+  static_ip           = local.docker_mirror_static_ip
+  instance_tag_prefix = "prod"
 }
 
 module "executors-codeintel" {
