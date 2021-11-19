@@ -1,6 +1,6 @@
 # Terraform module for Sourcegraph executors (AWS)
 
-This repository provides a [Terraform module](https://learn.hashicorp.com/tutorials/terraform/module-use?in=terraform/modules) to provision Sourcegraph executor compute resources on AWS.
+This repository provides a [Terraform module](https://learn.hashicorp.com/tutorials/terraform/module-use?in=terraform/modules) to provision [Sourcegraph executor](https://docs.sourcegraph.com/admin/executors) compute resources on AWS. If you are installing executors for the first time, [follow our complete setup guide](https://docs.sourcegraph.com/admin/deploy_executors).
 
 ![Infrastructure overview](https://raw.githubusercontent.com/sourcegraph/terraform-aws-executors/master/images/infrastructure.png)
 
