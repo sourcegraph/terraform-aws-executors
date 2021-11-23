@@ -29,7 +29,7 @@ check_versions() {
   correct_regex="$3"
   find . -name "$file_pattern" -print0 | xargs -0 grep -n "$all_regex" >"$scratch/all.txt" || true
   find . -name "$file_pattern" -print0 | xargs -0 grep -n "$correct_regex" >"$scratch/correct.txt" || true
-  if ! ( git diff --color -U0 --no-index --exit-code "$scratch/all.txt" "$scratch/correct.txt" | tail -n +6 ); then
+  if ! (git diff --color -U0 --no-index --exit-code "$scratch/all.txt" "$scratch/correct.txt" | tail -n +6); then
     echo ""
     echo "❌ Detected out of sync versions in the lines above (should be version $latest)"
     exit 1
