@@ -13,16 +13,9 @@ cd "$(dirname "${BASH_SOURCE[0]}")"/..
 get_latest() {
   git fetch --tags
 
-  git tag |
+  git describe --tags --abbrev=0 |
     # drop `v` prefix
-    grep "^v" |
     cut -c2- |
-
-    # sort by semantic version
-    sort -t "." -k1,1n -k2,2n -k3,3n |
-
-    # last
-    tail -n 1 |
 
     # drop newline
     tr -d '\n'
