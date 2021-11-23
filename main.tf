@@ -45,5 +45,5 @@ module "aws-executor" {
   max_replicas                        = var.executor_max_replicas
   jobs_per_instance_scaling           = var.executor_jobs_per_instance_scaling
   metrics_environment_label           = var.executor_metrics_environment_label
-  docker_registry_mirror              = var.executor_docker_registry_mirror
+  docker_registry_mirror              = "http://${var.docker_mirror_static_ip}:5000"
 }
