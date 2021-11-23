@@ -8,7 +8,7 @@ This repository provides a [Terraform module](https://learn.hashicorp.com/tutori
 
 There are several examples in the [`examples`](https://github.com/sourcegraph/terraform-aws-executors/blob/master/examples) directory.
 
-#### [`examples/single-executor`](https://github.com/sourcegraph/terraform-aws-executors/blob/master/examples/single-executor)
+### [`examples/single-executor`](https://github.com/sourcegraph/terraform-aws-executors/blob/master/examples/single-executor)
 
 This example uses the [root module](https://registry.terraform.io/modules/sourcegraph/executors/aws/latest) that provisions a network, a Docker registry mirror, and a set of resources to run _one_ type of executor. To provision more than one type of executor (multiple queues or multiple environments), see the following `multiple-executors` example.
 
@@ -24,7 +24,7 @@ The following variables must be supplied:
 
 All of this module's variables are defined in [variables.tf](https://github.com/sourcegraph/terraform-aws-executors/blob/master/variables.tf).
 
-#### [`examples/multiple-executors`](https://github.com/sourcegraph/terraform-aws-executors/blob/master/examples/multiple-executors)
+### [`examples/multiple-executors`](https://github.com/sourcegraph/terraform-aws-executors/blob/master/examples/multiple-executors)
 
 This example uses [networking](https://registry.terraform.io/modules/sourcegraph/executors/aws/latest/submodules/networking), [docker-mirror](https://registry.terraform.io/modules/sourcegraph/executors/aws/latest/submodules/docker-mirror), and [executors](https://registry.terraform.io/modules/sourcegraph/executors/aws/latest/submodules/executors) submodules that provision a network, a Docker registry mirror, and sets of resources running one or more types of executors.
 
