@@ -4,6 +4,11 @@ This repository provides a [Terraform module](https://learn.hashicorp.com/tutori
 
 ![Infrastructure overview](https://raw.githubusercontent.com/sourcegraph/terraform-aws-executors/master/images/infrastructure.png)
 
+TODO
+
+TODO: [`single-executor` example](#examples/single-executor)
+TODO: [`multiple-executor` example](#examples/multiple-executor)
+
 ## Usage examples
 
 There are several examples in the [`examples`](https://github.com/sourcegraph/terraform-aws-executors/blob/master/examples) directory.

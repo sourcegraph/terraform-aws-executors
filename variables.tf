@@ -164,9 +164,3 @@ variable "executor_metrics_environment_label" {
   type        = string
   description = "The value for environment by which to filter the custom metrics."
 }
-
-variable "executor_docker_registry_mirror" {
-  type        = string
-  default     = ""
-  description = "A URL to a docker registry mirror to use (falling back to docker.io)."
-}
