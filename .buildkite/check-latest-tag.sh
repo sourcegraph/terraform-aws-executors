@@ -6,23 +6,16 @@ function finish() {
 }
 trap finish EXIT
 
-set -ex
+set -e -o pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")"/..
 
 get_latest() {
   git fetch --tags
 
-  git tag |
+  git describe --tags --abbrev=0 |
     # drop `v` prefix
-    grep "^v" |
     cut -c2- |
-
-    # sort by semantic version
-    sort -t "." -k1,1n -k2,2n -k3,3n |
-
-    # last
-    tail -n 1 |
 
     # drop newline
     tr -d '\n'
@@ -30,11 +23,30 @@ get_latest() {
 
 latest="$(get_latest)"
 
-git grep --line-number "# LATEST" examples >"$scratch/want.txt" || true
-git grep --line-number "\"$latest\" # LATEST" examples >"$scratch/got.txt" || true
+check_versions() {
+  file_pattern="$1"
+  all_regex="$2"
+  correct_regex="$3"
+  find . -name "$file_pattern" -print0 | xargs -0 grep -n "$all_regex" >"$scratch/all.txt" || true
+  find . -name "$file_pattern" -print0 | xargs -0 grep -n "$correct_regex" >"$scratch/correct.txt" || true
+  if ! ( git diff --color -U0 --no-index --exit-code "$scratch/all.txt" "$scratch/correct.txt" | tail -n +6 ); then
+    echo ""
+    echo "❌ Detected out of sync versions in the lines above (should be version $latest)"
+    exit 1
+  fi
+}
 
-if ! git diff --no-index --exit-code "$scratch/want.txt" "$scratch/got.txt"; then
-  echo ""
-  echo "❌ Detected old versions! Make sure that all versions \`version = \"...\" # LATEST\` match the latest git tag: $latest"
-  exit 1
-fi
+check_versions \
+  "*.tf" \
+  "# LATEST" \
+  "\"$latest\" # LATEST"
+
+check_versions \
+  "*.md" \
+  "https://registry.terraform.io/modules/sourcegraph/executors/aws/[0-9]\+\.[0-9]\+\.[0-9]\+" \
+  "https://registry.terraform.io/modules/sourcegraph/executors/aws/$latest"
+
+check_versions \
+  "*.md" \
+  "https://github.com/sourcegraph/terraform-aws-executors/blob/v[0-9]\+\.[0-9]\+\.[0-9]\+" \
+  "https://github.com/sourcegraph/terraform-aws-executors/blob/v$latest"
