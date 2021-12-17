@@ -105,6 +105,16 @@ resource "aws_launch_template" "executor" {
     }
   }
 
+  block_device_mappings {
+    device_name = "/dev/sdh"
+    ebs {
+      volume_size = var.boot_disk_size
+      volume_type = "gp3"
+      iops        = var.boot_disk_iops
+      throughput  = var.boot_disk_throughput
+    }
+  }
+
   instance_initiated_shutdown_behavior = "terminate"
 
   name_prefix = "${local.prefix}executor-template-"

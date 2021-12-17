@@ -1,6 +1,30 @@
 #!/usr/bin/env bash
 set -euxo pipefail
 
+# Alias the nvme devices to /dev/sdX.
+# https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/device_naming.html#available-ec2-device-names
+VOLUMES_NAME="$(find /dev -maxdepth 1 | grep -i 'nvme[0-21]n1$')"
+for VOLUME in ${VOLUMES_NAME}; do
+  ALIAS=$(sudo nvme id-ctrl -H -v "${VOLUME}" | { grep -Po '/dev/(sd[b-z]|xvd[b-z])' || test $? = 1; })
+  if [ -n "${ALIAS}" ]; then
+    sudo ln -s "${VOLUME}" "${ALIAS}"
+  fi
+done
+
+# Create a file system on /dev/sdh.
+sudo mkfs.ext4 /dev/sdh
+
+# Mount /dev/sdh to /mnt/data0.
+sudo mkdir -p /mnt/data0
+echo "/dev/sdh /mnt/data0 ext4 defaults 0 2" | sudo tee -a /etc/fstab
+sudo mount -a
+sudo chown ubuntu:ubuntu /mnt/data0
+
+# Configure docker to put data in local disk.
+mkdir -p /etc/docker
+echo "{\"data-root\": [\"/mnt/data0\"]}" >/etc/docker/daemon.json
+systemctl restart --now docker
+
 ## Pull terraform variables into the environment.
 %{ for key, value in environment_variables }
 ${key}="${value}"
