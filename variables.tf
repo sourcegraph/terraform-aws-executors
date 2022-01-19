@@ -5,7 +5,7 @@ variable "availability_zone" {
 
 variable "docker_mirror_machine_ami" {
   type        = string
-  default     = "ami-0594ec4921f1bf2cb"
+  default     = "ami-0a96778e34781f512"
   description = "AMI for the EC2 instance to use. Must be in the same availability zone."
 }
 
@@ -47,7 +47,7 @@ variable "executor_resource_prefix" {
 
 variable "executor_machine_image" {
   type        = string
-  default     = "ami-06b54a701648e483c"
+  default     = "ami-06b576e32944ce830"
   description = "Executor node machine disk image to use for creating the boot volume."
 }
 
