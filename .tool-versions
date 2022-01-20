@@ -1,3 +1,4 @@
 terraform 0.13.7
 shfmt 3.2.0
 shellcheck 0.7.1
+python 3.10.0
