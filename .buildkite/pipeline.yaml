@@ -9,3 +9,6 @@ steps:
     command: .buildkite/terraform-validate.sh
   - label: ":lint-roller:"
     command: .buildkite/check-latest-tag.sh
+  - label: ":lint-roller:"
+    command: .buildkite/ci-checkov.sh
+  
