@@ -9,3 +9,5 @@ steps:
     command: .buildkite/terraform-validate.sh
   - label: ":lint-roller:"
     command: .buildkite/check-latest-tag.sh
+  - label: ":lock: security - checkov"
+    command: .buildkite/ci-checkov.sh    
