@@ -1,13 +1,19 @@
 steps:
   - label: ":lipstick:"
     command: .buildkite/shfmt.sh
+    agents: { queue: standard }    
   - label: ":lipstick:"
     command: .buildkite/terraform-fmt.sh
+    agents: { queue: standard }    
   - label: ":lint-roller:"
     command: .buildkite/shellcheck.sh
+    agents: { queue: standard }    
   - label: ":terraform:"
     command: .buildkite/terraform-validate.sh
+    agents: { queue: standard }    
   - label: ":lint-roller:"
     command: .buildkite/check-latest-tag.sh
+    agents: { queue: standard }    
   - label: ":lock: security - checkov"
     command: .buildkite/ci-checkov.sh    
+    agents: { queue: standard }    
