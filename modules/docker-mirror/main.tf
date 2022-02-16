@@ -1,7 +1,8 @@
 # Create a log group in CloudWatch. This is where the docker mirror will ingest
 # its logs to.
 resource "aws_cloudwatch_log_group" "syslogs" {
-  name              = "sourcegraph_executors_docker_mirror"
+  # TODO: This is hardcoded in the executor docker mirror image.
+  name              = "executors_docker_mirror"
   retention_in_days = 7
 }
 

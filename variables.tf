@@ -5,7 +5,7 @@ variable "availability_zone" {
 
 variable "docker_mirror_machine_ami" {
   type        = string
-  default     = "ami-0a96778e34781f512"
+  default     = "ami-017d2d64e6873ad6a"
   description = "AMI for the EC2 instance to use. Must be in the same availability zone."
 }
 
