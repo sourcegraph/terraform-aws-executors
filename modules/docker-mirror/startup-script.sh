@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -euxo pipefail
 
+# Wait until the block device is attached.
+while true; do
+  sleep 1
+  test -e /dev/nvme1n1 && break
+done
+
 # Alias the nvme devices to /dev/sdX.
 # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/device_naming.html#available-ec2-device-names
 VOLUMES_NAME="$(find /dev -maxdepth 1 | grep -i 'nvme[0-21]n1$')"
@@ -13,7 +19,7 @@ done
 
 REALPATH="$(realpath /dev/sdh)"
 # Ensure /dev/sdh has a file system.
-if [ "$(file -s "$REALPATH")" == "$REALPATH: data" ]; then
+if [ "$(sudo file -s "$REALPATH")" == "$REALPATH: data" ]; then
   sudo mkfs.ext4 /dev/sdh
 fi
 
