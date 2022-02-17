@@ -10,7 +10,7 @@ variable "subnet_id" {
 
 variable "machine_ami" {
   type        = string
-  default     = "ami-017d2d64e6873ad6a"
+  default     = "ami-04e165a9d1e17206f"
   description = "AMI for the EC2 instance to use. Must be in the same availability zone."
 }
 

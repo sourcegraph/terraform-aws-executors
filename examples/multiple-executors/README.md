@@ -1,6 +1,6 @@
 # Multiple executor example
 
-This example uses [networking](https://registry.terraform.io/modules/sourcegraph/executors/aws/3.37.0/submodules/networking), [docker-mirror](https://registry.terraform.io/modules/sourcegraph/executors/aws/3.37.0/submodules/docker-mirror), and [executors](https://registry.terraform.io/modules/sourcegraph/executors/aws/3.37.0/submodules/executors) submodules that provision a network, a Docker registry mirror, and sets of resources running one or more types of executors.
+This example uses [networking](https://registry.terraform.io/modules/sourcegraph/executors/aws/3.37.1/submodules/networking), [docker-mirror](https://registry.terraform.io/modules/sourcegraph/executors/aws/3.37.1/submodules/docker-mirror), and [executors](https://registry.terraform.io/modules/sourcegraph/executors/aws/3.37.1/submodules/executors) submodules that provision a network, a Docker registry mirror, and sets of resources running one or more types of executors.
 
 The following variables must be supplied:
 
@@ -10,4 +10,4 @@ The following variables must be supplied:
 
 If your deployment environment already has a Docker registry that can be used, only the `executor` submodule must be used (and references to the `networking` and `docker-mirror` modules can be dropped). The Docker registry mirror address can be supplied along with its containing VPC and subnet as pre-existing identifier literals.
 
-All of these module's variables are defined in [modules/networking/variables.tf](https://github.com/sourcegraph/terraform-aws-executors/blob/v3.37.0/modules/networking/variables.tf), [modules/docker-mirror/variables.tf](https://github.com/sourcegraph/terraform-aws-executors/blob/v3.37.0/modules/docker-mirror/variables.tf), and [modules/executors/variables.tf](https://github.com/sourcegraph/terraform-aws-executors/blob/v3.37.0/modules/executors/variables.tf).
+All of these module's variables are defined in [modules/networking/variables.tf](https://github.com/sourcegraph/terraform-aws-executors/blob/v3.37.1/modules/networking/variables.tf), [modules/docker-mirror/variables.tf](https://github.com/sourcegraph/terraform-aws-executors/blob/v3.37.1/modules/docker-mirror/variables.tf), and [modules/executors/variables.tf](https://github.com/sourcegraph/terraform-aws-executors/blob/v3.37.1/modules/executors/variables.tf).
