@@ -16,7 +16,7 @@ variable "resource_prefix" {
 
 variable "machine_image" {
   type        = string
-  default     = "ami-032c4a67afefa6efd"
+  default     = "ami-0d276b56a03378b2e"
   description = "Executor node machine disk image to use for creating the boot volume."
 }
 
