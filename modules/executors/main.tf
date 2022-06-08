@@ -120,10 +120,13 @@ resource "aws_launch_template" "executor" {
     enabled = true
   }
 
-  instance_market_options {
-    market_type = var.preemptible_machines ? "spot" : null
-    spot_options {
-      spot_instance_type = "one-time"
+  dynamic "instance_market_options" {
+    for_each = var.preemptible_machines ? [1] : []
+    content {
+      market_type = "spot"
+      spot_options {
+        spot_instance_type = "one-time"
+      }
     }
   }
 
