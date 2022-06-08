@@ -142,6 +142,12 @@ variable "executor_firecracker_disk_space" {
   description = "The amount of disk space to give to each firecracker VM"
 }
 
+variable "executor_use_firecracker" {
+  type        = bool
+  default     = true
+  description = "Whether to isolate commands in virtual machines"
+}
+
 variable "executor_min_replicas" {
   type        = number
   default     = 1
