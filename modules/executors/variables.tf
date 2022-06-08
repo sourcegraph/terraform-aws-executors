@@ -16,7 +16,7 @@ variable "resource_prefix" {
 
 variable "machine_image" {
   type        = string
-  default     = "ami-0fe012d4d8f716202"
+  default     = "ami-051a5bdea41dd7493"
   description = "Executor node machine disk image to use for creating the boot volume."
 }
 
@@ -122,6 +122,12 @@ variable "firecracker_disk_space" {
   type        = string
   default     = "20GB"
   description = "The amount of disk space to give to each firecracker VM"
+}
+
+variable "use_firecracker" {
+  type        = bool
+  default     = true
+  description = "Whether to isolate commands in virtual machines"
 }
 
 variable "min_replicas" {

@@ -34,6 +34,7 @@ module "aws-executor" {
   sourcegraph_external_url            = var.executor_sourcegraph_external_url
   sourcegraph_executor_proxy_password = var.executor_sourcegraph_executor_proxy_password
   queue_name                          = var.executor_queue_name
+  use_firecracker                     = var.executor_use_firecracker
   maximum_runtime_per_job             = var.executor_maximum_runtime_per_job
   maximum_num_jobs                    = var.executor_maximum_num_jobs
   num_total_jobs                      = var.executor_num_total_jobs

@@ -120,10 +120,13 @@ resource "aws_launch_template" "executor" {
     enabled = true
   }
 
-  instance_market_options {
-    market_type = var.preemptible_machines ? "spot" : null
-    spot_options {
-      spot_instance_type = "one-time"
+  dynamic "instance_market_options" {
+    for_each = var.preemptible_machines ? [1] : []
+    content {
+      market_type = "spot"
+      spot_options {
+        spot_instance_type = "one-time"
+      }
     }
   }
 
@@ -145,6 +148,7 @@ resource "aws_launch_template" "executor" {
       "EXECUTOR_MAXIMUM_RUNTIME_PER_JOB"    = var.maximum_runtime_per_job
       "EXECUTOR_NUM_TOTAL_JOBS"             = var.num_total_jobs
       "EXECUTOR_MAX_ACTIVE_TIME"            = var.max_active_time
+      "EXECUTOR_USE_FIRECRACKER"            = var.use_firecracker
     }
   }))
 
