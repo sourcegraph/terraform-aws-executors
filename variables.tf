@@ -130,10 +130,22 @@ variable "executor_firecracker_num_cpus" {
   description = "The number of CPUs to give to each firecracker VM"
 }
 
+variable "executor_job_num_cpus" {
+  type        = number
+  default     = 4
+  description = "The number of CPUs to allocate to each virtual machine or container"
+}
+
 variable "executor_firecracker_memory" {
   type        = string
   default     = "12GB"
   description = "The amount of memory to give to each firecracker VM"
+}
+
+variable "executor_job_memory" {
+  type        = string
+  default     = "12GB"
+  description = "The amount of memory to allocate to each virtual machine or container"
 }
 
 variable "executor_firecracker_disk_space" {
