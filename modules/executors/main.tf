@@ -61,16 +61,6 @@ resource "aws_security_group" "metrics_access" {
     to_port     = 22
   }
 
-  # Only allow access from other instances to scrape metrics.
-  # TODO: Restrict this to not be 0.0.0.0/0.
-  ingress {
-    cidr_blocks = [var.http_access_cidr_range]
-    description = "Allow access to scrape metrics"
-    from_port   = 9999
-    protocol    = "TCP"
-    to_port     = 9999
-  }
-
   # Allow all outgoing network traffic.
   egress {
     from_port        = 0

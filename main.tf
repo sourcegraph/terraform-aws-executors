@@ -30,7 +30,6 @@ module "aws-executor" {
   preemptible_machines                     = var.executor_preemptible_machines
   instance_tag                             = var.executor_instance_tag
   ssh_access_cidr_range                    = var.executor_ssh_access_cidr_range
-  http_access_cidr_range                   = var.executor_http_access_cidr_range
   sourcegraph_external_url                 = var.executor_sourcegraph_external_url
   sourcegraph_executor_proxy_password      = var.executor_sourcegraph_executor_proxy_password
   queue_name                               = var.executor_queue_name
