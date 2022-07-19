@@ -29,18 +29,3 @@ EOF
 resource "aws_iam_access_key" "metric_writer" {
   user = aws_iam_user.metric_writer.name
 }
-
-resource "aws_iam_user" "instance_scraper" {
-  name = "${substr(local.prefix, 0, 11)}-instance-scraper"
-}
-
-resource "aws_iam_policy_attachment" "instance_scraper" {
-  name       = "${substr(var.resource_prefix, 0, 11)}InstanceScraper"
-  users      = [aws_iam_user.instance_scraper.name]
-  groups     = ["readonly"]
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess"
-}
-
-resource "aws_iam_access_key" "instance_scraper" {
-  user = aws_iam_user.instance_scraper.name
-}
