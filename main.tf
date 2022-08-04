@@ -7,15 +7,15 @@ module "aws-networking" {
 module "aws-docker-mirror" {
   source = "./modules/docker-mirror"
 
-  vpc_id                 = module.aws-networking.vpc_id
-  subnet_id              = module.aws-networking.subnet_id
-  machine_ami            = var.docker_mirror_machine_ami
-  machine_type           = var.docker_mirror_machine_type
-  boot_disk_size         = var.docker_mirror_boot_disk_size
-  static_ip              = var.docker_mirror_static_ip
-  ssh_access_cidr_range  = var.docker_mirror_ssh_access_cidr_range
-  http_access_cidr_range = var.docker_mirror_http_access_cidr_range
-  instance_tag_prefix    = var.executor_instance_tag
+  vpc_id                  = module.aws-networking.vpc_id
+  subnet_id               = module.aws-networking.subnet_id
+  http_access_cidr_ranges = module.aws-networking.ip_cidr
+  machine_ami             = var.docker_mirror_machine_ami
+  machine_type            = var.docker_mirror_machine_type
+  boot_disk_size          = var.docker_mirror_boot_disk_size
+  static_ip               = var.docker_mirror_static_ip
+  ssh_access_cidr_range   = var.docker_mirror_ssh_access_cidr_range
+  instance_tag_prefix     = var.executor_instance_tag
 }
 
 module "aws-executor" {
