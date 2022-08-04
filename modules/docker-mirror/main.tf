@@ -94,7 +94,7 @@ resource "aws_security_group" "default" {
   }
 
   ingress {
-    cidr_blocks = [var.http_metrics_access_cidr_range]
+    cidr_blocks = [var.http_access_cidr_range]
     description = "Allow access to Docker registry metrics via exporter_exporter"
     from_port   = 9999
     protocol    = "TCP"

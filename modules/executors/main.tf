@@ -138,6 +138,7 @@ resource "aws_launch_template" "executor" {
   user_data = base64encode(templatefile("${path.module}/startup-script.sh.tpl", {
     environment_variables = {
       "EXECUTOR_DOCKER_REGISTRY_MIRROR"     = var.docker_registry_mirror
+      "DOCKER_REGISTRY_NODE_EXPORTER_URL"   = var.docker_registry_mirror_node_exporter_url
       "SOURCEGRAPH_EXTERNAL_URL"            = var.sourcegraph_external_url
       "SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD" = var.sourcegraph_executor_proxy_password
       "EXECUTOR_MAXIMUM_NUM_JOBS"           = var.maximum_num_jobs
