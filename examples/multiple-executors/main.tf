@@ -34,7 +34,8 @@ module "executors-codeintel" {
   queue_name                          = "codeintel"
   metrics_environment_label           = "prod"
   docker_registry_mirror              = "http://${local.docker_mirror_static_ip}:5000"
-  use_firecracker                     = true
+  #   docker_registry_mirror_node_exporter_url = "http://${local.docker_mirror_static_ip}:9999"
+  use_firecracker = true
 }
 
 module "executors-batches" {
@@ -50,5 +51,6 @@ module "executors-batches" {
   queue_name                          = "batches"
   metrics_environment_label           = "prod"
   docker_registry_mirror              = "http://${local.docker_mirror_static_ip}:5000"
-  use_firecracker                     = true
+  #   docker_registry_mirror_node_exporter_url = "http://${local.docker_mirror_static_ip}:9999"
+  use_firecracker = true
 }

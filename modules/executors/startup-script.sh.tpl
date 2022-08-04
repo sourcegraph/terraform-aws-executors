@@ -8,6 +8,7 @@ ${key}="${value}"
 
 # Conditionally set below
 STARTUP_SCRIPT_LINE=''
+DOCKER_REGISTRY_NODE_EXPORTER_URL_LINE=''
 
 # If a docker registry mirror is configured, create a startup script
 # that will configure docker to use the mirror. This requires writing
@@ -22,6 +23,10 @@ EOF
 
   chmod +x /vm-startup.sh
   STARTUP_SCRIPT_LINE='EXECUTOR_VM_STARTUP_SCRIPT_PATH=/vm-startup.sh'
+
+  if [ "$${DOCKER_REGISTRY_NODE_EXPORTER_URL}" != '' ]; then
+    DOCKER_REGISTRY_NODE_EXPORTER_URL_LINE="DOCKER_REGISTRY_NODE_EXPORTER_URL=$${DOCKER_REGISTRY_NODE_EXPORTER_URL}"
+  fi
 fi
 
 # Write the systemd environment file used by the executor service
@@ -38,6 +43,7 @@ EXECUTOR_NUM_TOTAL_JOBS="$${EXECUTOR_NUM_TOTAL_JOBS}"
 EXECUTOR_MAX_ACTIVE_TIME="$${EXECUTOR_MAX_ACTIVE_TIME}"
 EXECUTOR_USE_FIRECRACKER="$${EXECUTOR_USE_FIRECRACKER}"
 $${STARTUP_SCRIPT_LINE}
+$${DOCKER_REGISTRY_NODE_EXPORTER_URL_LINE}
 EOF
 
 # Enable and start the executor service
