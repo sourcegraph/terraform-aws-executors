@@ -48,7 +48,7 @@ resource "aws_iam_role_policy_attachment" "ssm" {
   policy_arn = data.aws_iam_policy.ssm.arn
 }
 
-# Allow access to running instances over SSH and on port 9999 to scrape metrics.
+# Allow access to running instances over SSH.
 resource "aws_security_group" "metrics_access" {
   name   = "${var.resource_prefix}SourcegraphExecutorsMetricsAccess"
   vpc_id = var.vpc_id
