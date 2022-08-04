@@ -61,6 +61,12 @@ variable "ssh_access_cidr_range" {
   description = "CIDR range from where SSH access to the EC2 instances is acceptable."
 }
 
+variable "http_access_cidr_range" {
+  type        = string
+  default     = "0.0.0.0/0"
+  description = "DEPRECATED. This is not used anymore."
+}
+
 variable "sourcegraph_external_url" {
   type        = string
   description = "The externally accessible URL of the target Sourcegraph instance."
