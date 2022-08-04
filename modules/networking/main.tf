@@ -1,3 +1,7 @@
+locals {
+  ip_cidr = "10.0.1.0/24"
+}
+
 # Create a VPC to host the cache and the executors in.
 # We will have a subnet in there, that has an all-destination route to an egress-only
 # internet gateway. That way, we protect from incoming traffic.
@@ -8,12 +12,12 @@ resource "aws_vpc" "default" {
 
 resource "aws_subnet" "default" {
   vpc_id            = aws_vpc.default.id
-  cidr_block        = "10.0.1.0/24"
+  cidr_block        = local.ip_cidr
   availability_zone = var.availability_zone
 }
 
 resource "aws_internet_gateway" "default" {
-  # TODO: Make this an egress-only internet gateway. This will break our current metrics 
+  # TODO: Make this an egress-only internet gateway. This will break our current metrics
   # collection, though.
   vpc_id = aws_vpc.default.id
 }

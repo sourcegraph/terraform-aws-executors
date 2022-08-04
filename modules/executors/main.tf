@@ -48,7 +48,7 @@ resource "aws_iam_role_policy_attachment" "ssm" {
   policy_arn = data.aws_iam_policy.ssm.arn
 }
 
-# Allow access to running instances over SSH and on port 9999 to scrape metrics.
+# Allow access to running instances over SSH.
 resource "aws_security_group" "metrics_access" {
   name   = "${var.resource_prefix}SourcegraphExecutorsMetricsAccess"
   vpc_id = var.vpc_id
@@ -59,16 +59,6 @@ resource "aws_security_group" "metrics_access" {
     from_port   = 22
     protocol    = "TCP"
     to_port     = 22
-  }
-
-  # Only allow access from other instances to scrape metrics.
-  # TODO: Restrict this to not be 0.0.0.0/0.
-  ingress {
-    cidr_blocks = [var.http_access_cidr_range]
-    description = "Allow access to scrape metrics"
-    from_port   = 9999
-    protocol    = "TCP"
-    to_port     = 9999
   }
 
   # Allow all outgoing network traffic.

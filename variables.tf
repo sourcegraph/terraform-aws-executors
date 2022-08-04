@@ -36,7 +36,7 @@ variable "docker_mirror_ssh_access_cidr_range" {
 variable "docker_mirror_http_access_cidr_range" {
   type        = string
   default     = "10.0.0.0/16"
-  description = "CIDR range from where HTTP access to the Docker registry is acceptable."
+  description = "DEPRECATED. This is not used anymore."
 }
 
 variable "executor_resource_prefix" {
@@ -82,7 +82,7 @@ variable "executor_ssh_access_cidr_range" {
 variable "executor_http_access_cidr_range" {
   type        = string
   default     = "0.0.0.0/0"
-  description = "CIDR range from where HTTP access to the metrics endpoint is acceptable."
+  description = "DEPRECATED. This is not used anymore."
 }
 
 variable "executor_sourcegraph_external_url" {
