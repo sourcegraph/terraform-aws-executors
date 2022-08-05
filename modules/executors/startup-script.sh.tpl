@@ -21,19 +21,14 @@ echo "{\"registry-mirrors\": [\"$${EXECUTOR_DOCKER_REGISTRY_MIRROR}\"]}" > /etc/
 systemctl restart --now docker
 EOF
 
+  # Allow access to the docker registry from the VM.
   IP=$(echo $${EXECUTOR_DOCKER_REGISTRY_MIRROR} | grep -oE '//(.*?):' | sed 's/[\/:]//g')
   PORT=$(echo $${EXECUTOR_DOCKER_REGISTRY_MIRROR} | grep -oE "(:[0-9]{1,6})" | sed 's/://g')
 
-  iptables -I CNI-ADMIN -p tcp -d $${IP} -dport $${PORT}
+  iptables -I CNI-ADMIN -p tcp -d $${IP} --dport $${PORT} -j ACCEPT
 
   # Store the iptables config.
-  iptables-save >/etc/iptables-store.conf
-  # And make sure it gets loaded on boot.
-  cat <<EOF >/etc/network/if-up.d/iptables
-#!/bin/sh
-iptables-restore < /etc/iptables-store.conf
-EOF
-  chmod +x /etc/network/if-up.d/iptables
+  iptables-save >/etc/iptables/rules.v4
 
   chmod +x /vm-startup.sh
   STARTUP_SCRIPT_LINE='EXECUTOR_VM_STARTUP_SCRIPT_PATH=/vm-startup.sh'
