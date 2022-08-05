@@ -10,6 +10,8 @@ ${key}="${value}"
 STARTUP_SCRIPT_LINE=''
 DOCKER_REGISTRY_NODE_EXPORTER_URL_LINE=''
 
+function parse() {}
+
 # If a docker registry mirror is configured, create a startup script
 # that will configure docker to use the mirror. This requires writing
 # a docker configuration file and restarting the service.
@@ -20,6 +22,20 @@ mkdir -p /etc/docker
 echo "{\"registry-mirrors\": [\"$${EXECUTOR_DOCKER_REGISTRY_MIRROR}\"]}" > /etc/docker/daemon.json
 systemctl restart --now docker
 EOF
+
+  IP=parse($${EXECUTOR_DOCKER_REGISTRY_MIRROR})
+  PORT=parse($${EXECUTOR_DOCKER_REGISTRY_MIRROR})
+
+  iptables -I CNI-ADMIN -p tcp -d $${IP} -dport $${PORT}
+
+  # Store the iptables config.
+  iptables-save >/etc/iptables-store.conf
+  # And make sure it gets loaded on boot.
+  cat <<EOF >/etc/network/if-up.d/iptables
+#!/bin/sh
+iptables-restore < /etc/iptables-store.conf
+EOF
+  chmod +x /etc/network/if-up.d/iptables
 
   chmod +x /vm-startup.sh
   STARTUP_SCRIPT_LINE='EXECUTOR_VM_STARTUP_SCRIPT_PATH=/vm-startup.sh'
