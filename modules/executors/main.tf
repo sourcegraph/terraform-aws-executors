@@ -79,7 +79,7 @@ resource "aws_cloudwatch_log_group" "syslogs" {
 
 data "aws_ami" "latest_ami" {
   most_recent = true
-  owners      = ["sourcegraph-ci"]
+  owners      = ["185007729374"]
 
   filter {
     name   = "name"

@@ -12,7 +12,7 @@ data "aws_subnet" "main" {
 
 data "aws_ami" "latest_ami" {
   most_recent = true
-  owners      = ["sourcegraph-ci"]
+  owners      = ["185007729374"]
 
   filter {
     name   = "name"
