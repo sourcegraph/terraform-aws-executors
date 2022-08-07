@@ -26,7 +26,7 @@ EOF
 }
 
 resource "aws_iam_instance_profile" "instance" {
-  name = "sourcegraph_executors"
+  name = "${local.prefix}_executors"
   role = aws_iam_role.ec2-role.name
 }
 
@@ -100,7 +100,7 @@ resource "aws_launch_template" "executor" {
   name_prefix = "${local.prefix}executor-template-"
 
   network_interfaces {
-    associate_public_ip_address = true
+    associate_public_ip_address = var.assign_public_ip
     subnet_id                   = var.subnet_id
     # Attach security group.
     security_groups = [aws_security_group.metrics_access.id]

@@ -71,3 +71,9 @@ variable "instance_tag_prefix" {
   type        = string
   description = "A label tag to add to all the machines; can be used for filtering out the right instances in stackdriver monitoring and in Prometheus instance discovery."
 }
+
+variable "assign_public_ip" {
+  type        = bool
+  default     = true
+  description = "If false, no public IP will be associated with the executors."
+}

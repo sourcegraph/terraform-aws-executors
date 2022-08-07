@@ -176,3 +176,9 @@ variable "docker_registry_mirror_node_exporter_url" {
   default     = ""
   description = "A URL to a docker registry mirror node exporter to scrape (optional)"
 }
+
+variable "assign_public_ip" {
+  type        = bool
+  default     = true
+  description = "If false, no public IP will be associated with the executors."
+}

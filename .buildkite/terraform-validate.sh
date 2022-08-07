@@ -11,6 +11,7 @@ MODULES=(
   ./modules/credentials
   .
   ./examples/single-executor
+  ./examples/private-single-executor
   ./examples/multiple-executors
 )
 
