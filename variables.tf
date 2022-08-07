@@ -5,8 +5,8 @@ variable "availability_zone" {
 
 variable "docker_mirror_machine_ami" {
   type        = string
-  default     = "ami-01fd7b25f60ecd0e6"
-  description = "AMI for the EC2 instance to use. Must be in the same availability zone."
+  default     = ""
+  description = "AMI for the EC2 instance to use. Must be in the same availability zone. Leave empty to use latest compatible with the Sourcegraph version."
 }
 
 variable "docker_mirror_machine_type" {
@@ -47,8 +47,8 @@ variable "executor_resource_prefix" {
 
 variable "executor_machine_image" {
   type        = string
-  default     = "ami-07ba4816e60d800f8"
-  description = "Executor node machine disk image to use for creating the boot volume."
+  default     = ""
+  description = "Executor node machine disk image to use for creating the boot volume. Leave empty to use latest compatible with the Sourcegraph version."
 }
 
 variable "executor_machine_type" {

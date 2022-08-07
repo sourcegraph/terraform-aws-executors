@@ -16,8 +16,8 @@ variable "resource_prefix" {
 
 variable "machine_image" {
   type        = string
-  default     = "ami-07ba4816e60d800f8"
-  description = "Executor node machine disk image to use for creating the boot volume."
+  default     = ""
+  description = "Executor node machine disk image to use for creating the boot volume. Leave empty to use latest compatible with the Sourcegraph version."
 }
 
 variable "machine_type" {
