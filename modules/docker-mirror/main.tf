@@ -10,9 +10,29 @@ data "aws_subnet" "main" {
   id = var.subnet_id
 }
 
+data "aws_ami" "latest_ami" {
+  most_recent = true
+  owners      = ["185007729374"]
+
+  filter {
+    name   = "name"
+    values = ["sourcegraph-executors-docker-mirror-3-42-*"]
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
 # The docker registry mirror EC2 instance.
 resource "aws_instance" "default" {
-  ami           = var.machine_ami
+  ami           = var.machine_ami != "" ? var.machine_ami : data.aws_ami.latest_ami.image_id
   instance_type = var.machine_type
 
   root_block_device {

@@ -10,8 +10,8 @@ variable "subnet_id" {
 
 variable "machine_ami" {
   type        = string
-  default     = "ami-01fd7b25f60ecd0e6"
-  description = "AMI for the EC2 instance to use. Must be in the same availability zone."
+  default     = ""
+  description = "AMI for the EC2 instance to use. Must be in the same availability zone. Leave empty to use latest compatible with the Sourcegraph version."
 }
 
 variable "machine_type" {

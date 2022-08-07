@@ -77,13 +77,33 @@ resource "aws_cloudwatch_log_group" "syslogs" {
   retention_in_days = 7
 }
 
+data "aws_ami" "latest_ami" {
+  most_recent = true
+  owners      = ["185007729374"]
+
+  filter {
+    name   = "name"
+    values = ["sourcegraph-executors-3-42-*"]
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
 # Template for the instances launched by the autoscaling group.
 # We always organize instances in an auto scaling group, even when autoscaling
 # is not enabled. This doesn't actually auto-scale until you attach an autoscaling
 # policy.
 resource "aws_launch_template" "executor" {
   instance_type = var.machine_type
-  image_id      = var.machine_image
+  image_id      = var.machine_image != "" ? var.machine_image : data.aws_ami.latest_ami.image_id
 
   block_device_mappings {
     device_name = "/dev/sda1"
