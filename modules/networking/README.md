@@ -4,4 +4,4 @@ This module provides the networking glue between the sibling [executors](https:/
 
 This module is very simple, creating only a network and a subnet by default.
 
-Using the `nat` flag, an optional NAT will be provisioned in the network, too. This can be useful in conjunction with the `assign_public_ip` option of the executors module to create a private network without public IPs.
+Using the `nat` flag, an optional NAT will be provisioned in the network, too. This can be useful in conjunction with the `assign_public_ip` option of the executors and docker-mirror modules to create a private network without public IPs.

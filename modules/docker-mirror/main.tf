@@ -23,6 +23,7 @@ resource "aws_instance" "default" {
 
   tags = {
     "executor_tag" = "${var.instance_tag_prefix}-docker-mirror"
+    "Name"         = "sourcegraph-executors-docker-registry-mirror"
   }
 
   monitoring = true
@@ -55,9 +56,6 @@ resource "aws_volume_attachment" "docker-storage" {
 }
 
 resource "aws_eip" "static" {
-  # TODO - make this unreachable from public internet (but without this there is no egress).
-  # Therefor, we need to have two subnets, and a NAT gateway. Not sure if it's worth the
-  # additional cost.
   vpc                       = true
   associate_with_private_ip = var.static_ip
   network_interface         = aws_network_interface.static.id
@@ -66,7 +64,8 @@ resource "aws_eip" "static" {
 # Always bind the static IP address to a network interface so it's never claimed
 # by another instance.
 resource "aws_network_interface" "static" {
-  private_ips = [var.static_ip]
+  private_ips       = [var.static_ip]
+  ipv4_prefix_count = var.assign_public_ip ? 1 : 0
   # The subnet also defines the AZ of the instance, so no need to specify it again on the instance.
   subnet_id       = var.subnet_id
   security_groups = [aws_security_group.default.id]
