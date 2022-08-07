@@ -56,6 +56,8 @@ resource "aws_volume_attachment" "docker-storage" {
 }
 
 resource "aws_eip" "static" {
+  count = var.assign_public_ip ? 1 : 0
+
   vpc                       = true
   associate_with_private_ip = var.static_ip
   network_interface         = aws_network_interface.static.id
@@ -64,8 +66,7 @@ resource "aws_eip" "static" {
 # Always bind the static IP address to a network interface so it's never claimed
 # by another instance.
 resource "aws_network_interface" "static" {
-  private_ips       = [var.static_ip]
-  ipv4_prefix_count = var.assign_public_ip ? 1 : 0
+  private_ips = [var.static_ip]
   # The subnet also defines the AZ of the instance, so no need to specify it again on the instance.
   subnet_id       = var.subnet_id
   security_groups = [aws_security_group.default.id]
