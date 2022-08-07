@@ -2,6 +2,7 @@ module "aws-networking" {
   source = "./modules/networking"
 
   availability_zone = var.availability_zone
+  nat               = var.private_networking
 }
 
 module "aws-docker-mirror" {
@@ -16,6 +17,7 @@ module "aws-docker-mirror" {
   static_ip              = var.docker_mirror_static_ip
   ssh_access_cidr_range  = var.docker_mirror_ssh_access_cidr_range
   instance_tag_prefix    = var.executor_instance_tag
+  assign_public_ip       = var.private_networking ? false : true
 }
 
 module "aws-executor" {
@@ -47,4 +49,5 @@ module "aws-executor" {
   metrics_environment_label                = var.executor_metrics_environment_label
   docker_registry_mirror                   = "http://${var.docker_mirror_static_ip}:5000"
   docker_registry_mirror_node_exporter_url = "http://${var.docker_mirror_static_ip}:9999"
+  assign_public_ip                         = var.private_networking ? false : true
 }

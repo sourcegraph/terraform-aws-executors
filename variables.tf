@@ -182,3 +182,9 @@ variable "executor_metrics_environment_label" {
   type        = string
   description = "The value for environment by which to filter the custom metrics."
 }
+
+variable "private_networking" {
+  type        = bool
+  default     = false
+  description = "If true, the executors and docker mirror will live in a private subnet and communicate with the internet through NAT."
+}
