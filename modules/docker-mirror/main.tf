@@ -11,7 +11,7 @@ data "aws_subnet" "main" {
 }
 
 data "aws_ami" "latest_ami" {
-  count       = var.machine_image != "" ? 0 : 1
+  count       = var.machine_ami != "" ? 0 : 1
   most_recent = true
   owners      = ["185007729374"]
 
