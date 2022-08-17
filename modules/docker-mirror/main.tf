@@ -11,6 +11,7 @@ data "aws_subnet" "main" {
 }
 
 data "aws_ami" "latest_ami" {
+  count       = var.machine_ami != "" ? 0 : 1
   most_recent = true
   owners      = ["185007729374"]
 
@@ -32,7 +33,7 @@ data "aws_ami" "latest_ami" {
 
 # The docker registry mirror EC2 instance.
 resource "aws_instance" "default" {
-  ami           = var.machine_ami != "" ? var.machine_ami : data.aws_ami.latest_ami.image_id
+  ami           = var.machine_ami != "" ? var.machine_ami : data.aws_ami.latest_ami.0.image_id
   instance_type = var.machine_type
 
   root_block_device {

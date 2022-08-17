@@ -78,6 +78,7 @@ resource "aws_cloudwatch_log_group" "syslogs" {
 }
 
 data "aws_ami" "latest_ami" {
+  count       = var.machine_image != "" ? 0 : 1
   most_recent = true
   owners      = ["185007729374"]
 
@@ -103,7 +104,7 @@ data "aws_ami" "latest_ami" {
 # policy.
 resource "aws_launch_template" "executor" {
   instance_type = var.machine_type
-  image_id      = var.machine_image != "" ? var.machine_image : data.aws_ami.latest_ami.image_id
+  image_id      = var.machine_image != "" ? var.machine_image : data.aws_ami.latest_ami.0.image_id
 
   block_device_mappings {
     device_name = "/dev/sda1"
