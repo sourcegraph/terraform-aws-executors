@@ -32,15 +32,21 @@ variable "boot_disk_size" {
   description = "Executor node disk size in GB."
 }
 
+variable "boot_disk_type" {
+  type        = string
+  default     = ""
+  description = "The type of volume. gp3, io1, io2."
+}
+
 variable "boot_disk_iops" {
   type        = number
-  default     = 500
+  default     = 0
   description = "Persistent Docker registry mirror additional IOPS."
 }
 
 variable "boot_disk_throughput" {
   type        = number
-  default     = 125
+  default     = 0
   description = "Persistent Docker registry mirror disk throughput in MiB/s."
 }
 

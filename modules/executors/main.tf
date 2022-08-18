@@ -110,9 +110,9 @@ resource "aws_launch_template" "executor" {
     device_name = "/dev/sda1"
     ebs {
       volume_size = var.boot_disk_size
-      volume_type = "gp3"
-      iops        = var.boot_disk_iops
-      throughput  = var.boot_disk_throughput
+      volume_type = var.boot_disk_type != "" ? var.boot_disk_type : "gp3"
+      iops        = var.boot_disk_iops != 0 ? var.boot_disk_iops : null
+      throughput  = var.boot_disk_throughput != 0 ? var.boot_disk_throughput : null
     }
   }
 
