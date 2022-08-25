@@ -21,6 +21,18 @@ variable "docker_mirror_boot_disk_size" {
   description = "Docker registry mirror node disk size in GB."
 }
 
+variable "docker_mirror_boot_disk_kms_key_id" {
+  type        = string
+  default     = null
+  description = "[Optional] KMS Key ID for EBS boot disk encryption"
+}
+
+variable "docker_mirror_disk_kms_key_id" {
+  type        = string
+  default     = null
+  description = "[Optional] KMS Key ID for EBS disk encryption"
+}
+
 variable "docker_mirror_static_ip" {
   type        = string
   default     = "10.0.1.4"
@@ -61,6 +73,12 @@ variable "executor_boot_disk_size" {
   type        = number
   default     = 100 // 100GB
   description = "Executor node disk size in GB"
+}
+
+variable "executor_boot_disk_kms_key_id" {
+  type        = string
+  default     = null
+  description = "[Optional] KMS Key ID for EBS boot disk encryption"
 }
 
 variable "executor_preemptible_machines" {

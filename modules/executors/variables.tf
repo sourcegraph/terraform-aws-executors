@@ -44,6 +44,12 @@ variable "boot_disk_throughput" {
   description = "Persistent Docker registry mirror disk throughput in MiB/s."
 }
 
+variable "boot_disk_kms_key_id" {
+  type        = string
+  default     = null
+  description = "[Optional] The KMS Key ID for EBS volume encryption."
+}
+
 variable "preemptible_machines" {
   type        = bool
   default     = false

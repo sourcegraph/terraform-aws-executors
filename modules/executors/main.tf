@@ -113,6 +113,8 @@ resource "aws_launch_template" "executor" {
       volume_type = "gp3"
       iops        = var.boot_disk_iops
       throughput  = var.boot_disk_throughput
+      encrypted   = true
+      kms_key_id  = var.boot_disk_kms_key_id
     }
   }
 
