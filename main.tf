@@ -19,6 +19,8 @@ module "aws-docker-mirror" {
   machine_type                           = var.docker_mirror_machine_type
   ami_version                            = var.ami_version
   boot_disk_size                         = var.docker_mirror_boot_disk_size
+  boot_disk_kms_key_id                   = var.docker_mirror_boot_disk_kms_key_id
+  disk_kms_key_id                        = var.docker_mirror_disk_kms_key_id
   static_ip                              = var.docker_mirror_static_ip
   ssh_access_cidr_range                  = var.docker_mirror_ssh_access_cidr_range
   instance_tag_prefix                    = var.executor_instance_tag
@@ -38,6 +40,7 @@ module "aws-executor" {
   machine_type                                       = var.executor_machine_type
   ami_version                                        = var.ami_version
   boot_disk_size                                     = var.executor_boot_disk_size
+  boot_disk_kms_key_id                               = var.executor_boot_disk_kms_key_id
   preemptible_machines                               = var.executor_preemptible_machines
   instance_tag                                       = var.executor_instance_tag
   ssh_access_cidr_range                              = var.executor_ssh_access_cidr_range
