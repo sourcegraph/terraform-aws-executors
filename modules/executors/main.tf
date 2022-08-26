@@ -73,6 +73,7 @@ resource "aws_security_group" "metrics_access" {
 
 resource "aws_cloudwatch_log_group" "syslogs" {
   # TODO: This is hardcoded in the executor image.
+  count             = var.need_syslogs ? 1 : 0
   name              = "executors"
   retention_in_days = 7
 }

@@ -188,3 +188,9 @@ variable "assign_public_ip" {
   default     = true
   description = "If false, no public IP will be associated with the executors."
 }
+
+variable "need_syslogs" {
+  type        = bool
+  default     = true
+  description = "For multi-executor only 1 of these needs to be made."
+}
