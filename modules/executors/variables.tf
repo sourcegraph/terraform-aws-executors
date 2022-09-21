@@ -22,26 +22,26 @@ variable "machine_image" {
 
 variable "machine_type" {
   type        = string
-  default     = "c5n.metal" // 4 vCPU, 15GB
+  default     = "c5n.metal" // 72 vCPU, 192GB
   description = "Executor node machine type."
 }
 
 variable "boot_disk_size" {
   type        = number
-  default     = 500 // 500GB
+  default     = 500
   description = "Executor node disk size in GB."
 }
 
 variable "boot_disk_iops" {
   type        = number
   default     = 500
-  description = "Persistent Docker registry mirror additional IOPS."
+  description = "Executor node disk additional IOPS."
 }
 
 variable "boot_disk_throughput" {
   type        = number
   default     = 125
-  description = "Persistent Docker registry mirror disk throughput in MiB/s."
+  description = "Executor node disk throughput in MiB/s."
 }
 
 variable "preemptible_machines" {
