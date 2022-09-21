@@ -84,7 +84,7 @@ data "aws_ami" "latest_ami" {
 
   filter {
     name   = "name"
-    values = ["sourcegraph-executors-3-43-*"]
+    values = ["sourcegraph-executors-4-0-*"]
   }
 
   filter {
@@ -197,6 +197,12 @@ resource "aws_autoscaling_group" "autoscaler" {
   tag {
     key                 = "executor_tag"
     value               = var.instance_tag
+    propagate_at_launch = true
+  }
+
+  tag {
+    key                 = "name"
+    value               = "sourcegraph_executor"
     propagate_at_launch = true
   }
 
