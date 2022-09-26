@@ -7,20 +7,12 @@ ${key}="${value}"
 %{ endfor ~}
 
 # Conditionally set below
-STARTUP_SCRIPT_LINE=''
 DOCKER_REGISTRY_NODE_EXPORTER_URL_LINE=''
 
 # If a docker registry mirror is configured, create a startup script
 # that will configure docker to use the mirror. This requires writing
 # a docker configuration file and restarting the service.
 if [ "$${EXECUTOR_DOCKER_REGISTRY_MIRROR}" != '' ]; then
-  cat <<EOF >/vm-startup.sh
-set +ex
-mkdir -p /etc/docker
-echo "{\"registry-mirrors\": [\"$${EXECUTOR_DOCKER_REGISTRY_MIRROR}\"]}" > /etc/docker/daemon.json
-systemctl restart --now docker
-EOF
-
   # Allow access to the docker registry from the VM.
   IP=$(echo $${EXECUTOR_DOCKER_REGISTRY_MIRROR} | grep -oE '//(.*?):' | sed 's/[\/:]//g')
   PORT=$(echo $${EXECUTOR_DOCKER_REGISTRY_MIRROR} | grep -oE "(:[0-9]{1,6})" | sed 's/://g')
@@ -29,9 +21,6 @@ EOF
 
   # Store the iptables config.
   iptables-save >/etc/iptables/rules.v4
-
-  chmod +x /vm-startup.sh
-  STARTUP_SCRIPT_LINE='EXECUTOR_VM_STARTUP_SCRIPT_PATH=/vm-startup.sh'
 
   if [ "$${DOCKER_REGISTRY_NODE_EXPORTER_URL}" != '' ]; then
     DOCKER_REGISTRY_NODE_EXPORTER_URL_LINE="DOCKER_REGISTRY_NODE_EXPORTER_URL=$${DOCKER_REGISTRY_NODE_EXPORTER_URL}"
@@ -51,7 +40,7 @@ EXECUTOR_FRONTEND_PASSWORD="$${SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD}"
 EXECUTOR_NUM_TOTAL_JOBS="$${EXECUTOR_NUM_TOTAL_JOBS}"
 EXECUTOR_MAX_ACTIVE_TIME="$${EXECUTOR_MAX_ACTIVE_TIME}"
 EXECUTOR_USE_FIRECRACKER="$${EXECUTOR_USE_FIRECRACKER}"
-$${STARTUP_SCRIPT_LINE}
+EXECUTOR_DOCKER_REGISTRY_MIRROR_URL="$${EXECUTOR_DOCKER_REGISTRY_MIRROR}"
 $${DOCKER_REGISTRY_NODE_EXPORTER_URL_LINE}
 EOF
 
