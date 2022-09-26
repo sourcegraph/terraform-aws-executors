@@ -129,6 +129,7 @@ resource "aws_ami_copy" "latest_ami" {
   count = var.machine_image == "" && data.aws_region.current.id != "us-east-1" && data.aws_region.current.id != "us-west-1" && data.aws_region.current.id != "us-east-2" && data.aws_region.current.id != "us-west-1" && data.aws_region.current.id == "eu-west-2" ? 1 : 0
 
   source_ami_region = "us-west-2"
+  name              = data.aws_ami.latest_ami_in_us_west_2.0.name
   source_ami_id     = data.aws_ami.latest_ami_in_us_west_2.0.image_id
   encrypted         = true
 }
