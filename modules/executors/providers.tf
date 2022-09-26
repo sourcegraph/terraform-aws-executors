@@ -5,6 +5,6 @@ terraform {
   }
 }
 
-provider "aws_us_west_2" {
+provider "aws-us-west-2" {
   region = "us-west-2"
 }
