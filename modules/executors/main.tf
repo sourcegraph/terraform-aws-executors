@@ -77,8 +77,13 @@ resource "aws_cloudwatch_log_group" "syslogs" {
   retention_in_days = 7
 }
 
+# Fetch the current region, used below.
+data "aws_region" "current" {}
+
 data "aws_ami" "latest_ami" {
-  count       = var.machine_image != "" ? 0 : 1
+  # If machine image is provided, use it. If one of the regions we publish to, fetch the latest AMI. Otherwise, fall back
+  # to copying it over from sources.
+  count       = var.machine_image != "" ? 0 : data.aws_region.current.id == "us-east-1" || data.aws_region.current.id == "us-west-1" || data.aws_region.current.id == "us-east-2" || data.aws_region.current.id == "us-west-1" || data.aws_region.current.id == "eu-west-2" ? 1 : 0
   most_recent = true
   owners      = ["185007729374"]
 
@@ -98,13 +103,43 @@ data "aws_ami" "latest_ami" {
   }
 }
 
+data "aws_ami" "latest_ami_in_us_west_2" {
+  count       = var.machine_image == "" && data.aws_region.current.id != "us-east-1" && data.aws_region.current.id != "us-west-1" && data.aws_region.current.id != "us-east-2" && data.aws_region.current.id != "us-west-1" && data.aws_region.current.id == "eu-west-2" ? 1 : 0
+  most_recent = true
+  owners      = ["185007729374"]
+  region      = "us-west-2"
+
+  filter {
+    name   = "name"
+    values = ["sourcegraph-executors-4-0-*"]
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
+resource "aws_ami_copy" "latest_ami" {
+  count = var.machine_image == "" && data.aws_region.current.id != "us-east-1" && data.aws_region.current.id != "us-west-1" && data.aws_region.current.id != "us-east-2" && data.aws_region.current.id != "us-west-1" && data.aws_region.current.id == "eu-west-2" ? 1 : 0
+
+  source_ami_region = "us-west-2"
+  source_ami_id     = data.aws_ami.latest_ami_in_us_west_2.image_id
+  encrypted         = true
+}
+
 # Template for the instances launched by the autoscaling group.
 # We always organize instances in an auto scaling group, even when autoscaling
 # is not enabled. This doesn't actually auto-scale until you attach an autoscaling
 # policy.
 resource "aws_launch_template" "executor" {
   instance_type = var.machine_type
-  image_id      = var.machine_image != "" ? var.machine_image : data.aws_ami.latest_ami.0.image_id
+  image_id      = var.machine_image != "" ? var.machine_image : data.aws_region.current.id != "us-east-1" && data.aws_region.current.id != "us-west-1" && data.aws_region.current.id != "us-east-2" && data.aws_region.current.id != "us-west-1" && data.aws_region.current.id == "eu-west-2" ? data.aws_ami_copy.latest_ami.image_id : data.aws_ami.latest_ami.0.image_id
 
   block_device_mappings {
     device_name = "/dev/sda1"
