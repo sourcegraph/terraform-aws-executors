@@ -75,7 +75,6 @@ resource "aws_cloudwatch_log_group" "syslogs" {
   # TODO: This is hardcoded in the executor image.
   name              = "executors"
   retention_in_days = 7
-  provider          = aws_us_west_2
 }
 
 # Fetch the current region, used below.
@@ -108,7 +107,7 @@ data "aws_ami" "latest_ami_in_us_west_2" {
   count       = var.machine_image == "" && data.aws_region.current.id != "us-east-1" && data.aws_region.current.id != "us-west-1" && data.aws_region.current.id != "us-east-2" && data.aws_region.current.id != "us-west-1" && data.aws_region.current.id == "eu-west-2" ? 1 : 0
   most_recent = true
   owners      = ["185007729374"]
-  region      = "us-west-2"
+  provider    = aws.us-west-2
 
   filter {
     name   = "name"
