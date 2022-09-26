@@ -75,7 +75,7 @@ resource "aws_cloudwatch_log_group" "syslogs" {
   # TODO: This is hardcoded in the executor image.
   name              = "executors"
   retention_in_days = 7
-  provider          = aws-us-west-2
+  provider          = aws_us_west_2
 }
 
 # Fetch the current region, used below.
