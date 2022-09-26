@@ -140,7 +140,7 @@ resource "aws_ami_copy" "latest_ami" {
 # policy.
 resource "aws_launch_template" "executor" {
   instance_type = var.machine_type
-  image_id      = var.machine_image != "" ? var.machine_image : data.aws_region.current.id != "us-east-1" && data.aws_region.current.id != "us-west-1" && data.aws_region.current.id != "us-east-2" && data.aws_region.current.id != "us-west-1" && data.aws_region.current.id == "eu-west-2" ? data.aws_ami_copy.latest_ami.0.image_id : data.aws_ami.latest_ami.0.image_id
+  image_id      = var.machine_image != "" ? var.machine_image : data.aws_region.current.id != "us-east-1" && data.aws_region.current.id != "us-west-1" && data.aws_region.current.id != "us-east-2" && data.aws_region.current.id != "us-west-1" && data.aws_region.current.id == "eu-west-2" ? aws_ami_copy.latest_ami.0.image_id : data.aws_ami.latest_ami.0.image_id
 
   block_device_mappings {
     device_name = "/dev/sda1"
