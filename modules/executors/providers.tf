@@ -4,3 +4,7 @@ terraform {
     aws = "~> 3.0"
   }
 }
+
+provider "aws_us_west_2" {
+  region = "us-west-2"
+}
