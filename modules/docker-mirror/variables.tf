@@ -26,6 +26,12 @@ variable "boot_disk_size" {
   description = "Docker registry mirror node disk size in GB."
 }
 
+variable "boot_disk_kms_key_id" {
+  type        = string
+  default     = null
+  description = "[Optional] The KMS Key ID for EBS volume encryption."
+}
+
 variable "disk_size" {
   type        = number
   default     = 64
@@ -42,6 +48,12 @@ variable "disk_throughput" {
   type        = number
   default     = 125
   description = "Persistent Docker registry mirror disk throughput in MiB/s."
+}
+
+variable "disk_kms_key_id" {
+  type        = string
+  default     = null
+  description = "[Optional] The KMS Key ID for mirror disk EBS volume encryption."
 }
 
 variable "static_ip" {

@@ -44,6 +44,12 @@ variable "boot_disk_throughput" {
   description = "Executor node disk throughput in MiB/s."
 }
 
+variable "boot_disk_kms_key_id" {
+  type        = string
+  default     = null
+  description = "[Optional] The KMS Key ID for EBS volume encryption."
+}
+
 variable "preemptible_machines" {
   type        = bool
   default     = false
@@ -181,4 +187,10 @@ variable "assign_public_ip" {
   type        = bool
   default     = true
   description = "If false, no public IP will be associated with the executors."
+}
+
+variable "need_syslogs" {
+  type        = bool
+  default     = true
+  description = "For multi-executor only 1 of these needs to be made."
 }

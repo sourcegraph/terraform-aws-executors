@@ -73,6 +73,7 @@ resource "aws_security_group" "metrics_access" {
 
 resource "aws_cloudwatch_log_group" "syslogs" {
   # TODO: This is hardcoded in the executor image.
+  count             = var.need_syslogs ? 1 : 0
   name              = "executors"
   retention_in_days = 7
 }
@@ -113,6 +114,8 @@ resource "aws_launch_template" "executor" {
       volume_type = "gp3"
       iops        = var.boot_disk_iops
       throughput  = var.boot_disk_throughput
+      encrypted   = true
+      kms_key_id  = var.boot_disk_kms_key_id
     }
   }
 

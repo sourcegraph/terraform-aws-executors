@@ -40,6 +40,7 @@ resource "aws_instance" "default" {
     volume_size = var.boot_disk_size
     volume_type = "gp3"
     encrypted   = true
+    kms_key_id  = var.boot_disk_kms_key_id
   }
 
   tags = {
@@ -65,6 +66,7 @@ resource "aws_ebs_volume" "docker-storage" {
   availability_zone = data.aws_subnet.main.availability_zone
   size              = var.disk_size
   encrypted         = true
+  kms_key_id        = var.disk_kms_key_id
   type              = "gp3"
   iops              = var.disk_iops
   throughput        = var.disk_throughput
