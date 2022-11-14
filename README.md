@@ -27,7 +27,7 @@ The [single-executor example](https://github.com/sourcegraph/terraform-aws-execu
   - 4.2.0 and above: `>= 1.1.0, < 2.0.0`
 - [hashicorp/aws](https://registry.terraform.io/providers/hashicorp/aws) 
   - 4.1.0 and below: `~> 3.0.0`
-  - 4.2.0 and above: `>= 3.0, ~> 4.0`
+  - 4.2.0 and above: `>= 3.0, < 5.0.0`
 
 ## Setup
 
