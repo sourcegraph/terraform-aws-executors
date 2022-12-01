@@ -188,3 +188,9 @@ variable "private_networking" {
   default     = false
   description = "If true, the executors and docker mirror will live in a private subnet and communicate with the internet through NAT."
 }
+
+variable "security_group_id" {
+  type        = string
+  default     = ""
+  description = "If provided, the default security groups will not be created. The ID of the security group to associate the Docker Mirror network and the Launch Template network with."
+}

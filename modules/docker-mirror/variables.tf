@@ -77,3 +77,9 @@ variable "assign_public_ip" {
   default     = true
   description = "If false, no public IP will be associated with the executors."
 }
+
+variable "docker_mirror_access_security_group_id" {
+  type        = string
+  default     = ""
+  description = "If provided, the default security groups will not be created. The ID of the security group to associate the Docker Mirror network with."
+}
