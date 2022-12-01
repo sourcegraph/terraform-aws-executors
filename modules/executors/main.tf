@@ -52,6 +52,8 @@ resource "aws_iam_role_policy_attachment" "ssm" {
 resource "aws_security_group" "metrics_access" {
   name   = "${var.resource_prefix}SourcegraphExecutorsMetricsAccess"
   vpc_id = var.vpc_id
+  # If a security group has already been provided, no need to create this security group
+  count = var.metrics_access_security_group_id == "" ? 1 : 0
 
   ingress {
     cidr_blocks = [var.ssh_access_cidr_range]
@@ -124,7 +126,7 @@ resource "aws_launch_template" "executor" {
     associate_public_ip_address = var.assign_public_ip
     subnet_id                   = var.subnet_id
     # Attach security group.
-    security_groups = [aws_security_group.metrics_access.id]
+    security_groups = [var.metrics_access_security_group_id != "" ? var.metrics_access_security_group_id : aws_security_group.metrics_access[0].id]
   }
 
   monitoring {
