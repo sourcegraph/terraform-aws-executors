@@ -8,16 +8,17 @@ module "aws-networking" {
 module "aws-docker-mirror" {
   source = "./modules/docker-mirror"
 
-  vpc_id                 = module.aws-networking.vpc_id
-  subnet_id              = module.aws-networking.subnet_id
-  http_access_cidr_range = module.aws-networking.ip_cidr
-  machine_ami            = var.docker_mirror_machine_ami
-  machine_type           = var.docker_mirror_machine_type
-  boot_disk_size         = var.docker_mirror_boot_disk_size
-  static_ip              = var.docker_mirror_static_ip
-  ssh_access_cidr_range  = var.docker_mirror_ssh_access_cidr_range
-  instance_tag_prefix    = var.executor_instance_tag
-  assign_public_ip       = var.private_networking ? false : true
+  vpc_id                                 = module.aws-networking.vpc_id
+  subnet_id                              = module.aws-networking.subnet_id
+  http_access_cidr_range                 = module.aws-networking.ip_cidr
+  machine_ami                            = var.docker_mirror_machine_ami
+  machine_type                           = var.docker_mirror_machine_type
+  boot_disk_size                         = var.docker_mirror_boot_disk_size
+  static_ip                              = var.docker_mirror_static_ip
+  ssh_access_cidr_range                  = var.docker_mirror_ssh_access_cidr_range
+  instance_tag_prefix                    = var.executor_instance_tag
+  assign_public_ip                       = var.private_networking ? false : true
+  docker_mirror_access_security_group_id = var.security_group_id
 }
 
 module "aws-executor" {
@@ -50,4 +51,5 @@ module "aws-executor" {
   docker_registry_mirror                   = "http://${var.docker_mirror_static_ip}:5000"
   docker_registry_mirror_node_exporter_url = "http://${var.docker_mirror_static_ip}:9999"
   assign_public_ip                         = var.private_networking ? false : true
+  metrics_access_security_group_id         = var.security_group_id
 }

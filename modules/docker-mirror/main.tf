@@ -90,13 +90,15 @@ resource "aws_network_interface" "static" {
   private_ips = [var.static_ip]
   # The subnet also defines the AZ of the instance, so no need to specify it again on the instance.
   subnet_id       = var.subnet_id
-  security_groups = [aws_security_group.default.id]
+  security_groups = [var.docker_mirror_access_security_group_id != "" ? var.docker_mirror_access_security_group_id : aws_security_group.default[0].id]
 }
 
 resource "aws_security_group" "default" {
   name        = "SourcegraphExecutorsDockerMirrorAccess"
   description = "Security group used by Sourcegraph executors to define access to the docker registry mirror."
   vpc_id      = var.vpc_id
+  # If a security group has already been provided, no need to create this security group
+  count = var.docker_mirror_access_security_group_id == "" ? 1 : 0
 
   ingress {
     cidr_blocks = [var.ssh_access_cidr_range]

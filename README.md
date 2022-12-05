@@ -34,6 +34,18 @@ The [single-executor example](https://github.com/sourcegraph/terraform-aws-execu
 Please follow our [setup guide](https://docs.sourcegraph.com/admin/deploy_executors_terraform) on how to deploy
 executors using Terraform.
 
+### Custom Security Group
+
+By default, the Terraform module will create two security groups. One for the Docker Mirror and the other for 
+the Launch Template. To provide a custom security group instead, set the variable `security_group_id` with 
+the ID of the security group.
+
+If a custom security group is provided, the following rules need to be set
+
+* Allows ingress access on the specified SSH CIDR range (defaults to `10.0.0.0/16`)
+* Allows ingress access to the Docker Registry on the specified HTTP CIDR range (defaults to `10.0.0.0/16`)
+* Allows all outgoing network traffic
+
 ## Compatibility with Sourcegraph
 
 The **major** and **minor** versions both need to match the Sourcegraph version the executors are talking to. Patch version **don't** need to match and it's generally advised to use the latest available.
