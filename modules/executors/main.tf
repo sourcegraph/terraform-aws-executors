@@ -163,6 +163,7 @@ resource "aws_launch_template" "executor" {
       "EXECUTOR_NUM_TOTAL_JOBS"             = var.num_total_jobs
       "EXECUTOR_MAX_ACTIVE_TIME"            = var.max_active_time
       "EXECUTOR_USE_FIRECRACKER"            = var.use_firecracker
+      "EXECUTOR_DOCKER_AUTH_CONFIG"         = var.docker_auth_config
     }
   }))
 
