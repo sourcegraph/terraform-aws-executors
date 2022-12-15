@@ -190,7 +190,7 @@ variable "metrics_access_security_group_id" {
 }
 
 variable "docker_auth_config" {
-  type = string
-  default = ""
+  type        = string
+  default     = ""
   description = "If provided, this docker auth config file will be used to authorize image pulls. See [Using private registries](https://docs.sourcegraph.com/admin/deploy_executors#using-private-registries) for how to configure."
 }
