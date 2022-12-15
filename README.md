@@ -46,13 +46,17 @@ If a custom security group is provided, the following rules need to be set
 * Allows ingress access to the Docker Registry on the specified HTTP CIDR range (defaults to `10.0.0.0/16`)
 * Allows all outgoing network traffic
 
+### Minumum IAM Permissions
+
+An example `iam-policy.json` is provided to demonstrate the minimal permissions required to deploy and destroy an executor Terraform module. Replace all instances of `AWS_ACCOUNT_ID` in the JSON file with the account ID you wish to deploy your executors into.
+
 ## Compatibility with Sourcegraph
 
 The **major** and **minor** versions both need to match the Sourcegraph version the executors are talking to. Patch version **don't** need to match and it's generally advised to use the latest available.
 For example:
 
 | **Sourcegraph version** | **Terraform module version** |
-|-------------------------|------------------------------|
+| ----------------------- | ---------------------------- |
 | 3.37.0                  | 3.37.\*                      |
 | 3.37.3                  | 3.37.\*                      |
 | 3.38.0                  | 3.38.\*                      |
