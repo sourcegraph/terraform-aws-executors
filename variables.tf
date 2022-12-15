@@ -194,3 +194,9 @@ variable "security_group_id" {
   default     = ""
   description = "If provided, the default security groups will not be created. The ID of the security group to associate the Docker Mirror network and the Launch Template network with."
 }
+
+variable "executor_docker_auth_config" {
+  type        = string
+  default     = ""
+  description = "If provided, this docker auth config file will be used to authorize image pulls. See [Using private registries](https://docs.sourcegraph.com/admin/deploy_executors#using-private-registries) for how to configure."
+}

@@ -52,4 +52,5 @@ module "aws-executor" {
   docker_registry_mirror_node_exporter_url = "http://${var.docker_mirror_static_ip}:9999"
   assign_public_ip                         = var.private_networking ? false : true
   metrics_access_security_group_id         = var.security_group_id
+  docker_auth_config                       = var.executor_docker_auth_config
 }
