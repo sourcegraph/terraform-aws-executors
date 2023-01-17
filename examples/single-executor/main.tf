@@ -5,7 +5,7 @@ locals {
 
 module "executors" {
   source  = "sourcegraph/executors/aws"
-  version = "4.3.0" # LATEST
+  version = "4.4.0" # LATEST
 
   availability_zone                            = local.availability_zone
   executor_instance_tag                        = "codeintel-prod"
