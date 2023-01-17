@@ -19,14 +19,14 @@ function get_modified_tag() {
 
 while getopts "h" opt; do
   case ${opt} in
-  h)
-    help
-    exit 0
-    ;;
-  \?)
-    echo "Invalid option: $OPTARG" 1>&2
-    exit 1
-    ;;
+    h)
+      help
+      exit 0
+      ;;
+    \?)
+      echo "Invalid option: $OPTARG" 1>&2
+      exit 1
+      ;;
   esac
 done
 
@@ -53,26 +53,26 @@ git checkout -b "$branch"
 
 os=$(uname -s)
 case $os in
-'Linux')
-  echo "Updating links in READMEs..."
-  find . -type f -iname "*.md" -exec sed -i -e "s/$latest_tag/$new_tag/g" {} +
-  echo "Updating version in './examples..."
-  find . -type f -iname "*.tf" -exec sed -i -e "s/$latest_tag/$new_tag/g" {} +
-  echo "Updating version in modules..."
-  find . -type f -iname "*.tf" -exec sed -i -e "s/$(get_modified_tag "$latest_tag")/$(get_modified_tag "$new_tag")/g" {} +
-  ;;
-'Darwin')
-  echo "Updating links in READMEs..."
-  find . -type f -iname "*.md" -exec sed -i '' "s/$latest_tag/$new_tag/g" {} +
-  echo "Updating version in './examples..."
-  find . -type f -iname "*.tf" -exec sed -i '' "s/$latest_tag/$new_tag/g" {} +
-  echo "Updating version in modules..."
-  find . -type f -iname "*.tf" -exec sed -i '' "s/$(get_modified_tag "$latest_tag")/$(get_modified_tag "$new_tag")/g" {} +
-  ;;
-*)
-  echo "Only Mac and Linux are supported"
-  exit 1
-  ;;
+  'Linux')
+    echo "Updating links in READMEs..."
+    find . -type f -iname "*.md" -exec sed -i -e "s/$latest_tag/$new_tag/g" {} +
+    echo "Updating version in './examples..."
+    find . -type f -iname "*.tf" -exec sed -i -e "s/$latest_tag/$new_tag/g" {} +
+    echo "Updating version in modules..."
+    find . -type f -iname "*.tf" -exec sed -i -e "s/$(get_modified_tag "$latest_tag")/$(get_modified_tag "$new_tag")/g" {} +
+    ;;
+  'Darwin')
+    echo "Updating links in READMEs..."
+    find . -type f -iname "*.md" -exec sed -i '' "s/$latest_tag/$new_tag/g" {} +
+    echo "Updating version in './examples..."
+    find . -type f -iname "*.tf" -exec sed -i '' "s/$latest_tag/$new_tag/g" {} +
+    echo "Updating version in modules..."
+    find . -type f -iname "*.tf" -exec sed -i '' "s/$(get_modified_tag "$latest_tag")/$(get_modified_tag "$new_tag")/g" {} +
+    ;;
+  *)
+    echo "Only Mac and Linux are supported"
+    exit 1
+    ;;
 esac
 
 echo "Committing changes to $branch..."

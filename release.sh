@@ -12,14 +12,14 @@ function help() {
 
 while getopts "h" opt; do
   case ${opt} in
-  h)
-    help
-    exit 0
-    ;;
-  \?)
-    echo "Invalid option: $OPTARG" 1>&2
-    exit 1
-    ;;
+    h)
+      help
+      exit 0
+      ;;
+    \?)
+      echo "Invalid option: $OPTARG" 1>&2
+      exit 1
+      ;;
   esac
 done
 
