@@ -2,78 +2,51 @@
 
 set -e
 
-cd "$(dirname "${BASH_SOURCE[0]}")"
-
-get_latest() {
-  git fetch
-
-  git tag |
-    # drop `v` prefix
-    grep "^v" |
-    cut -c2- |
-
-    # sort by semantic version
-    sort -t "." -k1,1n -k2,2n -k3,3n |
-
-    # last
-    tail -n 1 |
-
-    # drop newline
-    tr -d '\n'
+function help() {
+  echo "Usage: ./release.sh [-h] new_version"
+  echo "Options:"
+  echo " -h           Show this help message"
+  echo "Arguments:"
+  echo " new_version  The version to tag the repository to."
 }
 
-NEW="$1"
+while getopts "h" opt; do
+  case ${opt} in
+    h)
+      help
+      exit 0
+      ;;
+    \?)
+      echo "Invalid option: $OPTARG" 1>&2
+      exit 1
+      ;;
+  esac
+done
 
-if [ -z "$NEW" ]; then
-  echo "Usage  : bash release.sh <version>"
-  echo "Example: bash release.sh 1.2.3"
-  echo ""
-  echo "Fetching tags..."
-  latest="$(get_latest)"
-  echo -n "The current version is: $latest"
+new_tag="$1"
 
+if [[ -z "$new_tag" ]]; then
+  echo "Missing new version argument"
+  help
   exit 1
 fi
 
-if [[ "$NEW" == v* ]]; then
+if [[ "$new_tag" == v* ]]; then
   echo "<version> must not start with \"v\""
   exit 1
 fi
 
-echo "Checking for clean working tree..."
-if [[ "$(git diff --stat)" != "" ]]; then
-  echo "❌ Dirty working tree (try git stash)"
-  exit 1
-fi
+echo "Checking out master and fetching latest changes..."
+git checkout master && git pull
 
-echo "Checking that we're on master..."
-if [[ "$(git symbolic-ref HEAD | tr -d '\n')" != "refs/heads/master" ]]; then
-  echo "❌ Not on master (try git checkout master)"
-  exit 1
-fi
+echo "Creating tag v$new_tag..."
+git tag "v$new_tag"
 
-echo "Checking that master is up to date..."
-git fetch
-if [[ "$(git rev-parse master)" != "$(git rev-parse origin/master)" ]]; then
-  echo "❌ master is out of sync with origin/master (try git pull)"
-  exit 1
-fi
-
-git ls-tree -r HEAD --name-only -z examples | xargs -0 sed -i.sedbak "s/\"[0-9]*\.[0-9]*\.[0-9]*\" # LATEST/\"$NEW\" # LATEST/g"
-find . -name "*.sedbak" -print0 | xargs -0 rm
-
-git commit --all --message "release $NEW"
-git tag "v$NEW"
+echo "Pushing tags..."
 git push --tags
-git push
 
 echo ""
-echo "✅ Released $NEW"
-echo ""
-echo "- Tags   : https://github.com/sourcegraph/terraform-aws-executors/tags"
-echo "- Commits: https://github.com/sourcegraph/terraform-aws-executors/commits/master"
-echo ""
-echo "Make sure CI goes green 🟢:"
+echo "Now, make sure CI goes green 🟢(rerun builds until green):"
 echo ""
 echo "- https://buildkite.com/sourcegraph/terraform-aws-executors/builds?branch=master"
-echo "- https://buildkite.com/sourcegraph/terraform-aws-executors/builds?branch=v$NEW"
+echo "- https://buildkite.com/sourcegraph/terraform-aws-executors/builds?branch=v$new_tag"
