@@ -93,6 +93,7 @@ variable "executor_sourcegraph_external_url" {
 variable "executor_sourcegraph_executor_proxy_password" {
   type        = string
   description = "The shared password used to authenticate requests to the internal executor proxy."
+  sensitive   = true
 }
 
 variable "executor_queue_name" {
@@ -199,4 +200,5 @@ variable "executor_docker_auth_config" {
   type        = string
   default     = ""
   description = "If provided, this docker auth config file will be used to authorize image pulls. See [Using private registries](https://docs.sourcegraph.com/admin/deploy_executors#using-private-registries) for how to configure."
+  sensitive   = true
 }
