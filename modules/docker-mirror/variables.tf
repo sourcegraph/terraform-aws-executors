@@ -34,7 +34,7 @@ variable "disk_size" {
 
 variable "disk_iops" {
   type        = number
-  default     = 500
+  default     = 3000
   description = "Persistent Docker registry mirror additional IOPS."
 }
 

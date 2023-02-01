@@ -34,7 +34,7 @@ variable "boot_disk_size" {
 
 variable "boot_disk_iops" {
   type        = number
-  default     = 500
+  default     = 3000
   description = "Executor node disk additional IOPS."
 }
 
