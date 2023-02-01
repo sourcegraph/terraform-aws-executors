@@ -22,9 +22,9 @@ variable "docker_mirror_boot_disk_size" {
 }
 
 variable "docker_mirror_disk_iops" {
-    type        = number
-    default     = 3000
-    description = "Persistent Docker registry mirror additional IOPS."
+  type        = number
+  default     = 3000
+  description = "Persistent Docker registry mirror additional IOPS."
 }
 
 variable "docker_mirror_static_ip" {
@@ -70,9 +70,9 @@ variable "executor_boot_disk_size" {
 }
 
 variable "executor_boot_disk_iops" {
-    type        = number
-    default     = 3000
-    description = "Executor node disk additional IOPS."
+  type        = number
+  default     = 3000
+  description = "Executor node disk additional IOPS."
 }
 
 variable "executor_preemptible_machines" {
