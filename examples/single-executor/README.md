@@ -1,6 +1,6 @@
 # Single executor example
 
-This example uses the [root module](https://registry.terraform.io/modules/sourcegraph/executors/aws/4.4.1) that provisions a network, a Docker registry mirror, and a set of resources to run _one_ type of executor. To provision more than one type of executor (multiple queues or multiple environments), see the following `multiple-executors` example.
+This example uses the [root module](https://registry.terraform.io/modules/sourcegraph/executors/aws/4.4.2) that provisions a network, a Docker registry mirror, and a set of resources to run _one_ type of executor. To provision more than one type of executor (multiple queues or multiple environments), see the following `multiple-executors` example.
 
 The following variables must be supplied:
 
@@ -12,4 +12,4 @@ The following variables must be supplied:
 - `executor_metrics_environment_label`: The name of the target environment (e.g., `staging`, `prod`). This value must be the same as the `EXECUTOR_METRIC_ENVIRONMENT_LABEL` environment variable as described in [Configuring auto scaling](https://docs.sourcegraph.com/admin/deploy_executors#aws).
 - `executor_instance_tag`: Compute instances are tagged by this value by the key `executor_tag`. We recommend this value take the form `{executor_queue_name}-{executor_metrics_environment_label}`. This value must be the same as `INSTANCE_TAG` as described in [Configuring observability](https://docs.sourcegraph.com/admin/deploy_executors#aws-1).
 
-All of this module's variables are defined in [variables.tf](https://github.com/sourcegraph/terraform-aws-executors/blob/v4.4.1/variables.tf).
+All of this module's variables are defined in [variables.tf](https://github.com/sourcegraph/terraform-aws-executors/blob/v4.4.2/variables.tf).

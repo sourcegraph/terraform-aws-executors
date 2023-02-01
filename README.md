@@ -6,19 +6,19 @@ This repository provides a [Terraform module](https://learn.hashicorp.com/tutori
 
 This repository provides four submodules:
 
-1. The [executors module](https://registry.terraform.io/modules/sourcegraph/executors/aws/4.4.1/submodules/executors) provisions compute resources for executors.
-2. The [docker-mirror module](https://registry.terraform.io/modules/sourcegraph/executors/aws/4.4.1/submodules/docker-mirror) provisions a Docker registry pull-through cache.
-3. The [networking module](https://registry.terraform.io/modules/sourcegraph/executors/aws/4.4.1/submodules/networking) provisions a network to be shared by the executor and Docker registry resources.
-4. The [credentials module](https://registry.terraform.io/modules/sourcegraph/executors/aws/4.4.1/submodules/credentials) provisions credentials required by the Sourcegraph instance to enable observability and auto-scaling of executors.
+1. The [executors module](https://registry.terraform.io/modules/sourcegraph/executors/aws/4.4.2/submodules/executors) provisions compute resources for executors.
+2. The [docker-mirror module](https://registry.terraform.io/modules/sourcegraph/executors/aws/4.4.2/submodules/docker-mirror) provisions a Docker registry pull-through cache.
+3. The [networking module](https://registry.terraform.io/modules/sourcegraph/executors/aws/4.4.2/submodules/networking) provisions a network to be shared by the executor and Docker registry resources.
+4. The [credentials module](https://registry.terraform.io/modules/sourcegraph/executors/aws/4.4.2/submodules/credentials) provisions credentials required by the Sourcegraph instance to enable observability and auto-scaling of executors.
 
-The [multiple-executors example](https://github.com/sourcegraph/terraform-aws-executors/blob/v4.4.1/examples/multiple-executors) uses the submodule directly to provision multiple executor resource groups performing different types of work. Follow this example if you are:
+The [multiple-executors example](https://github.com/sourcegraph/terraform-aws-executors/blob/v4.4.2/examples/multiple-executors) uses the submodule directly to provision multiple executor resource groups performing different types of work. Follow this example if you are:
 
 1. Provisioning executors for use with multiple features (e.g., both [auto-indexing](https://docs.sourcegraph.com/code_intelligence/explanations/auto_indexing) and [server-side batch changes](https://docs.sourcegraph.com/batch_changes/explanations/server_side)), or
 2. Provisioning resources for multiple Sourcegraph instances (e.g., test, prod)
 
-This repository also provides a [root module](https://registry.terraform.io/modules/sourcegraph/executors/aws/4.4.1) combining the executors, network, and docker-mirror resources into an easier to use package.
+This repository also provides a [root module](https://registry.terraform.io/modules/sourcegraph/executors/aws/4.4.2) combining the executors, network, and docker-mirror resources into an easier to use package.
 
-The [single-executor example](https://github.com/sourcegraph/terraform-aws-executors/blob/v4.4.1/examples/single-executor) uses the root module to provision a single executor type. Follow this example if you are deploying to a single Sourcegraph instance and using a single executors-backed feature.
+The [single-executor example](https://github.com/sourcegraph/terraform-aws-executors/blob/v4.4.2/examples/single-executor) uses the root module to provision a single executor type. Follow this example if you are deploying to a single Sourcegraph instance and using a single executors-backed feature.
 
 ## Requirements
 
