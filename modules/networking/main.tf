@@ -1,12 +1,35 @@
 locals {
   public_ip_cidr = "10.0.0.0/24"
   ip_cidr        = "10.0.1.0/24"
+
+  vpc = {
+    name = var.randomize_resource_names ? "${random_id.vpc[0].hex}-executors" : null
+  }
+  subnet = {
+    name = var.randomize_resource_names ? "${random_id.subnet[0].hex}-executors-subnet" : null
+  }
+}
+
+resource "random_id" "vpc" {
+  count       = var.randomize_resource_names ? 1 : 0
+  prefix      = var.resource_prefix
+  byte_length = 6
 }
 
 # Create a VPC to host the cache and the executors in.
 resource "aws_vpc" "default" {
   cidr_block                       = "10.0.0.0/16"
   assign_generated_ipv6_cidr_block = true
+
+  tags = {
+    Name = local.vpc.name
+  }
+}
+
+resource "random_id" "subnet" {
+  count       = var.randomize_resource_names ? 1 : 0
+  prefix      = var.resource_prefix
+  byte_length = 6
 }
 
 # TODO: Rename later to "public". We don't do this now, so the docker mirror disks
@@ -16,6 +39,10 @@ resource "aws_subnet" "default" {
   cidr_block              = var.nat == true ? local.public_ip_cidr : local.ip_cidr
   availability_zone       = var.availability_zone
   map_public_ip_on_launch = true
+
+  tags = {
+    Name = local.subnet.name
+  }
 }
 
 resource "aws_route_table" "public" {
