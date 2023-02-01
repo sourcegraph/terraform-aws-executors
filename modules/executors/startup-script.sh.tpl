@@ -3,7 +3,7 @@ set -euxo pipefail
 
 ## Pull terraform variables into the environment.
 %{ for key, value in environment_variables }
-${key}="${value}"
+${key}="${replace(value, "\"", "\\\\\\\"")}"
 %{ endfor ~}
 
 # Conditionally set below
@@ -41,6 +41,7 @@ EXECUTOR_NUM_TOTAL_JOBS="$${EXECUTOR_NUM_TOTAL_JOBS}"
 EXECUTOR_MAX_ACTIVE_TIME="$${EXECUTOR_MAX_ACTIVE_TIME}"
 EXECUTOR_USE_FIRECRACKER="$${EXECUTOR_USE_FIRECRACKER}"
 EXECUTOR_DOCKER_REGISTRY_MIRROR_URL="$${EXECUTOR_DOCKER_REGISTRY_MIRROR}"
+EXECUTOR_DOCKER_AUTH_CONFIG="$${EXECUTOR_DOCKER_AUTH_CONFIG}"
 $${DOCKER_REGISTRY_NODE_EXPORTER_URL_LINE}
 EOF
 
