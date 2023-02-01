@@ -21,6 +21,12 @@ variable "docker_mirror_boot_disk_size" {
   description = "Docker registry mirror node disk size in GB."
 }
 
+variable "docker_mirror_disk_iops" {
+  type        = number
+  default     = 3000
+  description = "Persistent Docker registry mirror additional IOPS."
+}
+
 variable "docker_mirror_static_ip" {
   type        = string
   default     = "10.0.1.4"
@@ -61,6 +67,12 @@ variable "executor_boot_disk_size" {
   type        = number
   default     = 100 // 100GB
   description = "Executor node disk size in GB"
+}
+
+variable "executor_boot_disk_iops" {
+  type        = number
+  default     = 3000
+  description = "Executor node disk additional IOPS."
 }
 
 variable "executor_preemptible_machines" {
