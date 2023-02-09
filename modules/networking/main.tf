@@ -6,7 +6,26 @@ locals {
     name = var.randomize_resource_names ? "${random_id.vpc[0].hex}-executors" : null
   }
   subnet = {
-    name = var.randomize_resource_names ? "${random_id.subnet[0].hex}-executors-subnet" : null
+    public = {
+      name = var.randomize_resource_names ? "${random_id.subnet_public[0].hex}-executors-public" : null
+    }
+    private = {
+      name = var.randomize_resource_names ? "${random_id.subnet_private[0].hex}-executors-private" : null
+    }
+  }
+  route_table = {
+    public = {
+      name = var.randomize_resource_names ? "${random_id.route_table_public[0].hex}-executors-public" : null
+    }
+    private = {
+      name = var.randomize_resource_names ? "${random_id.route_table_private[0].hex}-executors-public" : null
+    }
+  }
+  internet_gateway = {
+    name = var.randomize_resource_names ? "${random_id.internet_gateway[0].hex}-executors-public" : null
+  }
+  eip = {
+    name = var.randomize_resource_names ? "${random_id.eip[0].hex}-executors" : null
   }
 }
 
@@ -26,7 +45,7 @@ resource "aws_vpc" "default" {
   }
 }
 
-resource "random_id" "subnet" {
+resource "random_id" "subnet_public" {
   count       = var.randomize_resource_names ? 1 : 0
   prefix      = var.resource_prefix
   byte_length = 6
@@ -41,17 +60,33 @@ resource "aws_subnet" "default" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name = local.subnet.name
+    Name = local.subnet.public.name
   }
+}
+
+resource "random_id" "route_table_public" {
+  count       = var.randomize_resource_names ? 1 : 0
+  prefix      = var.resource_prefix
+  byte_length = 6
 }
 
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.default.id
+
+  tags = {
+    Name = local.route_table.public.name
+  }
 }
 
 resource "aws_route_table_association" "public" {
   subnet_id      = aws_subnet.default.id
   route_table_id = aws_route_table.public.id
+}
+
+resource "random_id" "subnet_private" {
+  count       = var.randomize_resource_names ? 1 : 0
+  prefix      = var.resource_prefix
+  byte_length = 6
 }
 
 resource "aws_subnet" "private" {
@@ -64,11 +99,21 @@ resource "aws_subnet" "private" {
   map_public_ip_on_launch = false
 }
 
+resource "random_id" "route_table_private" {
+  count       = var.randomize_resource_names ? 1 : 0
+  prefix      = var.resource_prefix
+  byte_length = 6
+}
+
 resource "aws_route_table" "private" {
   # Only create this resource when NAT is enabled.
   count = var.nat == true ? 1 : 0
 
   vpc_id = aws_vpc.default.id
+
+  tags = {
+    Name = local.route_table.private.name
+  }
 }
 
 resource "aws_route_table_association" "private" {
@@ -79,8 +124,18 @@ resource "aws_route_table_association" "private" {
   route_table_id = aws_route_table.private.0.id
 }
 
+resource "random_id" "internet_gateway" {
+  count       = var.randomize_resource_names ? 1 : 0
+  prefix      = var.resource_prefix
+  byte_length = 6
+}
+
 resource "aws_internet_gateway" "default" {
   vpc_id = aws_vpc.default.id
+
+  tags = {
+    Name = local.internet_gateway.name
+  }
 }
 
 # Allow all instances in the public VPC to reach the internet gateway.
@@ -99,6 +154,12 @@ resource "aws_route" "private" {
   nat_gateway_id         = aws_nat_gateway.default.0.id
 }
 
+resource "random_id" "eip" {
+  count       = var.randomize_resource_names ? 1 : 0
+  prefix      = var.resource_prefix
+  byte_length = 6
+}
+
 # If NAT mode is enabled, we want a static IP for it.
 resource "aws_eip" "nat" {
   # Only create this resource when NAT is enabled.
@@ -106,6 +167,16 @@ resource "aws_eip" "nat" {
 
   vpc        = true
   depends_on = [aws_internet_gateway.default]
+
+  tags = {
+    Name = local.eip.name
+  }
+}
+
+resource "random_id" "nat_gateway" {
+  count       = var.randomize_resource_names ? 1 : 0
+  prefix      = var.resource_prefix
+  byte_length = 6
 }
 
 resource "aws_nat_gateway" "default" {
@@ -115,4 +186,8 @@ resource "aws_nat_gateway" "default" {
   allocation_id = aws_eip.nat.0.id
   subnet_id     = aws_subnet.default.id
   depends_on    = [aws_internet_gateway.default]
+
+  tags = {
+    Name = local.nat_gae
+  }
 }
