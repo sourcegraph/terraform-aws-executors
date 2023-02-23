@@ -59,7 +59,7 @@ variable "executor_machine_image" {
 
 variable "executor_machine_type" {
   type        = string
-  default     = "c5n.metal" // 4 vCPU, 15GB
+  default     = "c5n.metal" // 72 vCPU, 192GB
   description = "Executor node machine type."
 }
 
