@@ -1,5 +1,5 @@
 output "vpc_id" {
-  value       = aws_vpc.default.id
+  value       = var.create_vpc == true ? aws_vpc.default.id : data.aws_vpc.existing.id
   description = "The ID of the VPC that hosts the cache and the executors in."
 }
 
