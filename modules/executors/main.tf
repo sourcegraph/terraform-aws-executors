@@ -169,6 +169,8 @@ resource "aws_launch_template" "executor" {
 
   update_default_version = true
 
+  key_name = var.key_name
+
   lifecycle {
     create_before_destroy = true
   }

@@ -196,3 +196,10 @@ variable "docker_auth_config" {
   description = "If provided, this docker auth config file will be used to authorize image pulls. See [Using private registries](https://docs.sourcegraph.com/admin/deploy_executors#using-private-registries) for how to configure."
   sensitive   = true
 }
+
+variable "key_name" {
+  type        = string
+  default     = ""
+  description = "If provided, this value will be used to define an existing EC2 ssh key pair to user with the executor instance."
+  sensitive   = true
+}
