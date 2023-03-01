@@ -2,36 +2,40 @@ locals {
   public_ip_cidr = "10.0.0.0/24"
   ip_cidr        = "10.0.1.0/24"
 
+  resource_prefix = (var.resource_prefix == "" || substr(var.resource_prefix, -1, -2) == "-") ? var.resource_prefix : "${var.resource_prefix}-"
+
   vpc = {
-    name = var.randomize_resource_names ? "${random_id.vpc[0].hex}-executors" : null
+    name = var.randomize_resource_names ? "${local.resource_prefix}executors-${random_id.vpc[0].hex}" : null
   }
   subnet = {
     public = {
-      name = var.randomize_resource_names ? "${random_id.subnet_public[0].hex}-executors-public" : null
+      name = var.randomize_resource_names ? "${local.resource_prefix}executors-public-${random_id.subnet_public[0].hex}" : null
     }
     private = {
-      name = var.randomize_resource_names ? "${random_id.subnet_private[0].hex}-executors-private" : null
+      name = var.randomize_resource_names ? "${local.resource_prefix}executors-private-${random_id.subnet_private[0].hex}" : null
     }
   }
   route_table = {
     public = {
-      name = var.randomize_resource_names ? "${random_id.route_table_public[0].hex}-executors-public" : null
+      name = var.randomize_resource_names ? "${local.resource_prefix}executors-public-${random_id.route_table_public[0].hex}" : null
     }
     private = {
-      name = var.randomize_resource_names ? "${random_id.route_table_private[0].hex}-executors-public" : null
+      name = var.randomize_resource_names ? "${local.resource_prefix}executors-public-${random_id.route_table_private[0].hex}" : null
     }
   }
   internet_gateway = {
-    name = var.randomize_resource_names ? "${random_id.internet_gateway[0].hex}-executors-public" : null
+    name = var.randomize_resource_names ? "${local.resource_prefix}executors-public-${random_id.internet_gateway[0].hex}" : null
   }
   eip = {
-    name = var.randomize_resource_names ? "${random_id.eip[0].hex}-executors" : null
+    name = var.randomize_resource_names ? "${local.resource_prefix}executors-${random_id.eip[0].hex}" : null
+  }
+  nat_gateway = {
+    name = var.randomize_resource_names ? "${local.resource_prefix}executors-${random_id.eip[0].hex}" : null
   }
 }
 
 resource "random_id" "vpc" {
   count       = var.randomize_resource_names ? 1 : 0
-  prefix      = var.resource_prefix
   byte_length = 6
 }
 
@@ -47,7 +51,6 @@ resource "aws_vpc" "default" {
 
 resource "random_id" "subnet_public" {
   count       = var.randomize_resource_names ? 1 : 0
-  prefix      = var.resource_prefix
   byte_length = 6
 }
 
@@ -66,7 +69,6 @@ resource "aws_subnet" "default" {
 
 resource "random_id" "route_table_public" {
   count       = var.randomize_resource_names ? 1 : 0
-  prefix      = var.resource_prefix
   byte_length = 6
 }
 
@@ -85,7 +87,6 @@ resource "aws_route_table_association" "public" {
 
 resource "random_id" "subnet_private" {
   count       = var.randomize_resource_names ? 1 : 0
-  prefix      = var.resource_prefix
   byte_length = 6
 }
 
@@ -101,7 +102,6 @@ resource "aws_subnet" "private" {
 
 resource "random_id" "route_table_private" {
   count       = var.randomize_resource_names ? 1 : 0
-  prefix      = var.resource_prefix
   byte_length = 6
 }
 
@@ -126,7 +126,6 @@ resource "aws_route_table_association" "private" {
 
 resource "random_id" "internet_gateway" {
   count       = var.randomize_resource_names ? 1 : 0
-  prefix      = var.resource_prefix
   byte_length = 6
 }
 
@@ -156,7 +155,6 @@ resource "aws_route" "private" {
 
 resource "random_id" "eip" {
   count       = var.randomize_resource_names ? 1 : 0
-  prefix      = var.resource_prefix
   byte_length = 6
 }
 
@@ -175,7 +173,6 @@ resource "aws_eip" "nat" {
 
 resource "random_id" "nat_gateway" {
   count       = var.randomize_resource_names ? 1 : 0
-  prefix      = var.resource_prefix
   byte_length = 6
 }
 
@@ -188,6 +185,6 @@ resource "aws_nat_gateway" "default" {
   depends_on    = [aws_internet_gateway.default]
 
   tags = {
-    Name = local.nat_gae
+    Name = local.nat_gateway.name
   }
 }
