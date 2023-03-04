@@ -3,9 +3,9 @@ provider "aws" {
 
   default_tags {
     tags = {
-      "Name" = null
+      "Name"         = null
       "executor_tag" = null
-      "deployment" = "sourcegraph-executors"
+      "deployment"   = "sourcegraph-executors"
     }
   }
 }

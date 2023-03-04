@@ -10,12 +10,12 @@ variable "nat" {
 }
 
 variable "resource_prefix" {
-    type        = string
-    default     = ""
-    description = "An optional prefix to add to all resources created."
+  type        = string
+  default     = ""
+  description = "An optional prefix to add to all resources created."
 }
 
 variable "randomize_resource_names" {
-    type        = bool
-    description = "TODO"
+  type        = bool
+  description = "TODO"
 }

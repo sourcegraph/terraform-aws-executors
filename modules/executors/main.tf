@@ -99,7 +99,7 @@ resource "aws_security_group" "metrics_access" {
   name   = local.security_group.name
   vpc_id = var.vpc_id
   # If a security group has already been provided, no need to create this security group
-  count  = var.metrics_access_security_group_id == "" ? 1 : 0
+  count = var.metrics_access_security_group_id == "" ? 1 : 0
 
   ingress {
     cidr_blocks = [var.ssh_access_cidr_range]
@@ -190,7 +190,7 @@ resource "aws_launch_template" "executor" {
     associate_public_ip_address = var.assign_public_ip
     subnet_id                   = var.subnet_id
     # Attach security group.
-    security_groups             = [var.metrics_access_security_group_id != "" ? var.metrics_access_security_group_id : aws_security_group.metrics_access[0].id]
+    security_groups = [var.metrics_access_security_group_id != "" ? var.metrics_access_security_group_id : aws_security_group.metrics_access[0].id]
   }
 
   monitoring {
@@ -261,7 +261,7 @@ resource "aws_autoscaling_group" "autoscaler" {
   max_size                  = var.max_replicas
   vpc_zone_identifier       = [var.subnet_id]
   health_check_grace_period = 300
-  enabled_metrics           = [
+  enabled_metrics = [
     "GroupDesiredCapacity",
     "GroupInServiceCapacity",
     "GroupPendingCapacity",
