@@ -23,7 +23,6 @@ module "aws-docker-mirror" {
   instance_tag_prefix                    = var.executor_instance_tag
   assign_public_ip                       = var.private_networking ? false : true
   docker_mirror_access_security_group_id = var.security_group_id
-  disk_iops                              = 3000
 }
 
 module "aws-executor" {
