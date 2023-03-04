@@ -217,5 +217,6 @@ variable "executor_docker_auth_config" {
 
 variable "randomize_resource_names" {
   type        = bool
-  description = "TODO"
+  default     = false
+  description = "Use randomized names for resources. Deployments using the legacy naming convention will be updated in-place with randomized names when enabled."
 }
