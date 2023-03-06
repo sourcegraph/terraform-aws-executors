@@ -8,17 +8,19 @@ module "networking" {
   source  = "sourcegraph/executors/aws//modules/networking"
   version = "4.5.0" # LATEST
 
-  availability_zone = local.availability_zone
+  availability_zone        = local.availability_zone
+  randomize_resource_names = true
 }
 
 module "docker-mirror" {
   source  = "sourcegraph/executors/aws//modules/docker-mirror"
   version = "4.5.0" # LATEST
 
-  vpc_id              = module.networking.vpc_id
-  subnet_id           = module.networking.subnet_id
-  static_ip           = local.docker_mirror_static_ip
-  instance_tag_prefix = "prod"
+  vpc_id                   = module.networking.vpc_id
+  subnet_id                = module.networking.subnet_id
+  static_ip                = local.docker_mirror_static_ip
+  instance_tag_prefix      = "prod"
+  randomize_resource_names = true
 }
 
 module "executors-codeintel" {
@@ -35,7 +37,8 @@ module "executors-codeintel" {
   metrics_environment_label           = "prod"
   docker_registry_mirror              = "http://${local.docker_mirror_static_ip}:5000"
   #   docker_registry_mirror_node_exporter_url = "http://${local.docker_mirror_static_ip}:9999"
-  use_firecracker = true
+  use_firecracker                     = true
+  randomize_resource_names            = true
 }
 
 module "executors-batches" {
@@ -52,5 +55,6 @@ module "executors-batches" {
   metrics_environment_label           = "prod"
   docker_registry_mirror              = "http://${local.docker_mirror_static_ip}:5000"
   #   docker_registry_mirror_node_exporter_url = "http://${local.docker_mirror_static_ip}:9999"
-  use_firecracker = true
+  use_firecracker                     = true
+  randomize_resource_names            = true
 }
