@@ -1,13 +1,17 @@
 module "aws-networking" {
   source = "./modules/networking"
 
-  availability_zone = var.availability_zone
-  nat               = var.private_networking
+  randomize_resource_names = var.randomize_resource_names
+  resource_prefix          = var.executor_resource_prefix
+  availability_zone        = var.availability_zone
+  nat                      = var.private_networking
 }
 
 module "aws-docker-mirror" {
   source = "./modules/docker-mirror"
 
+  randomize_resource_names               = var.randomize_resource_names
+  resource_prefix                        = var.executor_resource_prefix
   vpc_id                                 = module.aws-networking.vpc_id
   subnet_id                              = module.aws-networking.subnet_id
   http_access_cidr_range                 = module.aws-networking.ip_cidr
@@ -24,9 +28,10 @@ module "aws-docker-mirror" {
 module "aws-executor" {
   source = "./modules/executors"
 
+  randomize_resource_names                 = var.randomize_resource_names
+  resource_prefix                          = var.executor_resource_prefix
   vpc_id                                   = module.aws-networking.vpc_id
   subnet_id                                = module.aws-networking.subnet_id
-  resource_prefix                          = var.executor_resource_prefix
   machine_image                            = var.executor_machine_image
   machine_type                             = var.executor_machine_type
   boot_disk_size                           = var.executor_boot_disk_size

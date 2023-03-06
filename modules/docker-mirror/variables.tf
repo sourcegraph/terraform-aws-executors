@@ -83,3 +83,14 @@ variable "docker_mirror_access_security_group_id" {
   default     = ""
   description = "If provided, the default security groups will not be created. The ID of the security group to associate the Docker Mirror network with."
 }
+
+variable "resource_prefix" {
+  type        = string
+  default     = ""
+  description = "An optional prefix to add to all resources created."
+}
+
+variable "randomize_resource_names" {
+  type        = bool
+  description = "Use randomized names for resources. Deployments using the legacy naming convention will be updated in-place with randomized names when enabled."
+}

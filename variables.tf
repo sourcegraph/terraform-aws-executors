@@ -214,3 +214,9 @@ variable "executor_docker_auth_config" {
   description = "If provided, this docker auth config file will be used to authorize image pulls. See [Using private registries](https://docs.sourcegraph.com/admin/deploy_executors#using-private-registries) for how to configure."
   sensitive   = true
 }
+
+variable "randomize_resource_names" {
+  type        = bool
+  default     = false
+  description = "Use randomized names for resources. Deployments using the legacy naming convention will be updated in-place with randomized names when enabled."
+}

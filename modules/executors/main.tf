@@ -2,6 +2,38 @@ locals {
   autoscaling        = var.min_replicas != var.max_replicas
   prefix             = var.resource_prefix != "" ? "${var.resource_prefix}_sourcegraph_" : "sourcegraph_"
   scaling_expression = "CEIL(queueSize / ${var.jobs_per_instance_scaling}) - instanceCount"
+
+  security_group = {
+    name = var.randomize_resource_names ? "${local.prefix}executors-${random_id.security_group[0].hex}" : "${var.resource_prefix}SourcegraphExecutorsMetricsAccess"
+  }
+  cloudwatch_log_group = {
+    name = var.randomize_resource_names ? "${local.prefix}executors-${random_id.cloudwatch_log_group[0].hex}" : null
+  }
+  iam_instance_profile = {
+    name = var.randomize_resource_names ? "${local.prefix}executors-${random_id.iam_instance_profile[0].hex}" : "${local.prefix}_executors"
+  }
+  launch_template = {
+    name = var.randomize_resource_names ? "${local.prefix}executors-${random_id.launch_template[0].hex}" : null
+  }
+  autoscaling_group = {
+    name = var.randomize_resource_names && local.autoscaling ? "${local.prefix}executors-${random_id.autoscaling_group[0].hex}" : "${local.prefix}executors"
+  }
+  cloudwatch_metric_alarm = {
+    in = {
+      name = var.randomize_resource_names && local.autoscaling ? "${local.prefix}executors-${random_id.cloudwatch_metric_alarm_in[0].hex}" : "${local.prefix}executor_queue_scale_in_trigger"
+    }
+    out = {
+      name = var.randomize_resource_names && local.autoscaling ? "${local.prefix}executors-${random_id.cloudwatch_metric_alarm_out[0].hex}" : "${local.prefix}executor_queue_scale_out_trigger"
+    }
+  }
+  autoscaling_policy = {
+    out = {
+      name = var.randomize_resource_names && local.autoscaling ? "${local.prefix}executors-${random_id.autoscaling_policy_out[0].hex}" : "${local.prefix}executor_queue_scale_out"
+    }
+    in = {
+      name = var.randomize_resource_names && local.autoscaling ? "${local.prefix}executors-${random_id.autoscaling_policy_in[0].hex}" : "${local.prefix}executor_queue_scale_in"
+    }
+  }
 }
 
 resource "aws_iam_role" "ec2-role" {
@@ -25,9 +57,18 @@ resource "aws_iam_role" "ec2-role" {
 EOF
 }
 
+resource "random_id" "iam_instance_profile" {
+  count       = var.randomize_resource_names ? 1 : 0
+  byte_length = 6
+}
+
 resource "aws_iam_instance_profile" "instance" {
-  name = "${local.prefix}_executors"
+  name = local.iam_instance_profile.name
   role = aws_iam_role.ec2-role.name
+
+  tags = {
+    Name = local.iam_instance_profile.name
+  }
 }
 
 data "aws_iam_policy" "cloudwatch" {
@@ -48,9 +89,14 @@ resource "aws_iam_role_policy_attachment" "ssm" {
   policy_arn = data.aws_iam_policy.ssm.arn
 }
 
+resource "random_id" "security_group" {
+  count       = var.randomize_resource_names ? 1 : 0
+  byte_length = 6
+}
+
 # Allow access to running instances over SSH.
 resource "aws_security_group" "metrics_access" {
-  name   = "${var.resource_prefix}SourcegraphExecutorsMetricsAccess"
+  name   = local.security_group.name
   vpc_id = var.vpc_id
   # If a security group has already been provided, no need to create this security group
   count = var.metrics_access_security_group_id == "" ? 1 : 0
@@ -71,12 +117,25 @@ resource "aws_security_group" "metrics_access" {
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
   }
+
+  tags = {
+    Name = local.security_group.name
+  }
+}
+
+resource "random_id" "cloudwatch_log_group" {
+  count       = var.randomize_resource_names ? 1 : 0
+  byte_length = 6
 }
 
 resource "aws_cloudwatch_log_group" "syslogs" {
   # TODO: This is hardcoded in the executor image.
   name              = "executors"
   retention_in_days = 7
+
+  tags = {
+    Name = local.cloudwatch_log_group.name
+  }
 }
 
 data "aws_ami" "latest_ami" {
@@ -98,6 +157,11 @@ data "aws_ami" "latest_ami" {
     name   = "virtualization-type"
     values = ["hvm"]
   }
+}
+
+resource "random_id" "launch_template" {
+  count       = var.randomize_resource_names ? 1 : 0
+  byte_length = 6
 }
 
 # Template for the instances launched by the autoscaling group.
@@ -172,10 +236,27 @@ resource "aws_launch_template" "executor" {
   lifecycle {
     create_before_destroy = true
   }
+
+  tag_specifications {
+    resource_type = "instance"
+
+    tags = {
+      Name = local.launch_template.name
+    }
+  }
+
+  tags = {
+    Name = local.launch_template.name
+  }
+}
+
+resource "random_id" "autoscaling_group" {
+  count       = var.randomize_resource_names ? 1 : 0
+  byte_length = 6
 }
 
 resource "aws_autoscaling_group" "autoscaler" {
-  name                      = "${local.prefix}executors"
+  name                      = local.autoscaling_group.name
   min_size                  = var.min_replicas
   max_size                  = var.max_replicas
   vpc_zone_identifier       = [var.subnet_id]
@@ -205,7 +286,7 @@ resource "aws_autoscaling_group" "autoscaler" {
 
   tag {
     key                 = "name"
-    value               = "sourcegraph_executor"
+    value               = local.autoscaling_group.name
     propagate_at_launch = true
   }
 
@@ -215,11 +296,16 @@ resource "aws_autoscaling_group" "autoscaler" {
   }
 }
 
+resource "random_id" "cloudwatch_metric_alarm_out" {
+  count       = local.autoscaling && var.randomize_resource_names ? 1 : 0
+  byte_length = 6
+}
+
 resource "aws_cloudwatch_metric_alarm" "scale_out_alarm" {
   # Don't create this resource when autoscaling is disabled.
   count = local.autoscaling ? 1 : 0
 
-  alarm_name                = "${local.prefix}executor_queue_scale_out_trigger"
+  alarm_name                = local.cloudwatch_metric_alarm.out.name
   comparison_operator       = "GreaterThanThreshold"
   threshold                 = "0"
   evaluation_periods        = "1"
@@ -254,7 +340,7 @@ resource "aws_cloudwatch_metric_alarm" "scale_out_alarm" {
       stat        = "Maximum"
 
       dimensions = {
-        "AutoScalingGroupName" = "${local.prefix}executors"
+        "AutoScalingGroupName" = local.autoscaling_group.name
       }
     }
   }
@@ -266,23 +352,37 @@ resource "aws_cloudwatch_metric_alarm" "scale_out_alarm" {
     label       = "The target number of instances to add to efficiently process the queue at its current size."
     return_data = "true"
   }
+
+  tags = {
+    Name = local.cloudwatch_metric_alarm.out.name
+  }
+}
+
+resource "random_id" "autoscaling_policy_out" {
+  count       = local.autoscaling && var.randomize_resource_names ? 1 : 0
+  byte_length = 6
 }
 
 resource "aws_autoscaling_policy" "scale_out" {
   # Don't create this resource when autoscaling is disabled.
   count = local.autoscaling ? 1 : 0
 
-  name                   = "${local.prefix}executor_queue_scale_out"
+  name                   = local.autoscaling_policy.out.name
   autoscaling_group_name = aws_autoscaling_group.autoscaler.name
   adjustment_type        = "ChangeInCapacity"
   scaling_adjustment     = 1
+}
+
+resource "random_id" "cloudwatch_metric_alarm_in" {
+  count       = local.autoscaling && var.randomize_resource_names ? 1 : 0
+  byte_length = 6
 }
 
 resource "aws_cloudwatch_metric_alarm" "scale_in_alarm" {
   # Don't create this resource when autoscaling is disabled.
   count = local.autoscaling ? 1 : 0
 
-  alarm_name                = "${local.prefix}executor_queue_scale_in_trigger"
+  alarm_name                = local.cloudwatch_metric_alarm.in.name
   comparison_operator       = "LessThanThreshold"
   threshold                 = "0"
   evaluation_periods        = "1"
@@ -317,7 +417,7 @@ resource "aws_cloudwatch_metric_alarm" "scale_in_alarm" {
       stat        = "Maximum"
 
       dimensions = {
-        "AutoScalingGroupName" = "${local.prefix}executors"
+        "AutoScalingGroupName" = local.autoscaling_group.name
       }
     }
   }
@@ -329,13 +429,22 @@ resource "aws_cloudwatch_metric_alarm" "scale_in_alarm" {
     label       = "The target number of instances that can be removed and continue to efficiently process the queue at its current size."
     return_data = "true"
   }
+
+  tags = {
+    Name = local.cloudwatch_metric_alarm.in.name
+  }
+}
+
+resource "random_id" "autoscaling_policy_in" {
+  count       = local.autoscaling && var.randomize_resource_names ? 1 : 0
+  byte_length = 6
 }
 
 resource "aws_autoscaling_policy" "scale_in" {
   # Don't create this resource when autoscaling is disabled.
   count = local.autoscaling ? 1 : 0
 
-  name                   = "${local.prefix}executor_queue_scale_in"
+  name                   = local.autoscaling_policy.in.name
   autoscaling_group_name = aws_autoscaling_group.autoscaler.name
   adjustment_type        = "ChangeInCapacity"
   scaling_adjustment     = -1

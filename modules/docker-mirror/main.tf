@@ -1,9 +1,38 @@
+locals {
+  resource_prefix = (var.resource_prefix == "" || substr(var.resource_prefix, -1, -2) == "-") ? var.resource_prefix : "${var.resource_prefix}-"
+
+  cloudwatch_log_group = {
+    name = var.randomize_resource_names ? "${local.resource_prefix}sourcegraph-executors-docker-registry-mirror-${random_id.cloudwatch_log_group[0].hex}" : null
+  }
+  instance = {
+    name = var.randomize_resource_names ? "${local.resource_prefix}sourcegraph-executors-docker-registry-mirror-${random_id.instance[0].hex}" : "sourcegraph-executors-docker-registry-mirror"
+  }
+  eip = {
+    name = var.randomize_resource_names ? "${local.resource_prefix}sourcegraph-executors-docker-registry-mirror-${random_id.eip[0].hex}" : null
+  }
+  network_interface = {
+    name = var.randomize_resource_names ? "${local.resource_prefix}sourcegraph-executors-docker-registry-mirror-${random_id.network_interface[0].hex}" : null
+  }
+  security_group = {
+    name = var.randomize_resource_names ? "${local.resource_prefix}SourcegraphExecutorsDockerMirrorAccess-${random_id.security_group[0].hex}" : "SourcegraphExecutorsDockerMirrorAccess"
+  }
+}
+
+resource "random_id" "cloudwatch_log_group" {
+  count       = var.randomize_resource_names ? 1 : 0
+  byte_length = 6
+}
+
 # Create a log group in CloudWatch. This is where the docker mirror will ingest
 # its logs to.
 resource "aws_cloudwatch_log_group" "syslogs" {
   # TODO: This is hardcoded in the executor docker mirror image.
   name              = "executors_docker_mirror"
   retention_in_days = 7
+
+  tags = {
+    Name = local.cloudwatch_log_group.name
+  }
 }
 
 data "aws_subnet" "main" {
@@ -31,6 +60,11 @@ data "aws_ami" "latest_ami" {
   }
 }
 
+resource "random_id" "instance" {
+  count       = var.randomize_resource_names ? 1 : 0
+  byte_length = 6
+}
+
 # The docker registry mirror EC2 instance.
 resource "aws_instance" "default" {
   ami           = var.machine_ami != "" ? var.machine_ami : data.aws_ami.latest_ami.0.image_id
@@ -44,7 +78,7 @@ resource "aws_instance" "default" {
 
   tags = {
     "executor_tag" = "${var.instance_tag_prefix}-docker-mirror"
-    "Name"         = "sourcegraph-executors-docker-registry-mirror"
+    "Name"         = local.instance.name
   }
 
   monitoring = true
@@ -76,12 +110,26 @@ resource "aws_volume_attachment" "docker-storage" {
   instance_id = aws_instance.default.id
 }
 
+resource "random_id" "eip" {
+  count       = var.randomize_resource_names ? 1 : 0
+  byte_length = 6
+}
+
 resource "aws_eip" "static" {
   count = var.assign_public_ip ? 1 : 0
 
   vpc                       = true
   associate_with_private_ip = var.static_ip
   network_interface         = aws_network_interface.static.id
+
+  tags = {
+    Name = local.eip.name
+  }
+}
+
+resource "random_id" "network_interface" {
+  count       = var.randomize_resource_names ? 1 : 0
+  byte_length = 6
 }
 
 # Always bind the static IP address to a network interface so it's never claimed
@@ -91,10 +139,19 @@ resource "aws_network_interface" "static" {
   # The subnet also defines the AZ of the instance, so no need to specify it again on the instance.
   subnet_id       = var.subnet_id
   security_groups = [var.docker_mirror_access_security_group_id != "" ? var.docker_mirror_access_security_group_id : aws_security_group.default[0].id]
+
+  tags = {
+    Name = local.network_interface.name
+  }
+}
+
+resource "random_id" "security_group" {
+  count       = var.randomize_resource_names ? 1 : 0
+  byte_length = 6
 }
 
 resource "aws_security_group" "default" {
-  name        = "SourcegraphExecutorsDockerMirrorAccess"
+  name        = local.security_group.name
   description = "Security group used by Sourcegraph executors to define access to the docker registry mirror."
   vpc_id      = var.vpc_id
   # If a security group has already been provided, no need to create this security group
@@ -131,6 +188,10 @@ resource "aws_security_group" "default" {
     protocol         = "-1"
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
+  }
+
+  tags = {
+    Name = local.security_group.name
   }
 }
 

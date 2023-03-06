@@ -9,6 +9,8 @@ module "networking" {
   version = "4.5.0" # LATEST
 
   availability_zone = local.availability_zone
+  # TODO uncomment when cutting release
+  #  randomize_resource_names = true
 }
 
 module "docker-mirror" {
@@ -19,6 +21,8 @@ module "docker-mirror" {
   subnet_id           = module.networking.subnet_id
   static_ip           = local.docker_mirror_static_ip
   instance_tag_prefix = "prod"
+  # TODO uncomment when cutting release
+  #  randomize_resource_names = true
 }
 
 module "executors-codeintel" {
@@ -36,6 +40,8 @@ module "executors-codeintel" {
   docker_registry_mirror              = "http://${local.docker_mirror_static_ip}:5000"
   #   docker_registry_mirror_node_exporter_url = "http://${local.docker_mirror_static_ip}:9999"
   use_firecracker = true
+  # TODO uncomment when cutting release
+  #  randomize_resource_names = true
 }
 
 module "executors-batches" {
@@ -53,4 +59,6 @@ module "executors-batches" {
   docker_registry_mirror              = "http://${local.docker_mirror_static_ip}:5000"
   #   docker_registry_mirror_node_exporter_url = "http://${local.docker_mirror_static_ip}:9999"
   use_firecracker = true
+  # TODO uncomment when cutting release
+  #  randomize_resource_names = true
 }
