@@ -37,8 +37,8 @@ module "executors-codeintel" {
   metrics_environment_label           = "prod"
   docker_registry_mirror              = "http://${local.docker_mirror_static_ip}:5000"
   #   docker_registry_mirror_node_exporter_url = "http://${local.docker_mirror_static_ip}:9999"
-  use_firecracker                     = true
-  randomize_resource_names            = true
+  use_firecracker          = true
+  randomize_resource_names = true
 }
 
 module "executors-batches" {
@@ -55,6 +55,6 @@ module "executors-batches" {
   metrics_environment_label           = "prod"
   docker_registry_mirror              = "http://${local.docker_mirror_static_ip}:5000"
   #   docker_registry_mirror_node_exporter_url = "http://${local.docker_mirror_static_ip}:9999"
-  use_firecracker                     = true
-  randomize_resource_names            = true
+  use_firecracker          = true
+  randomize_resource_names = true
 }
