@@ -5,7 +5,7 @@ locals {
 
 module "executors" {
   source  = "sourcegraph/executors/aws"
-  version = "4.5.0" # LATEST
+  version = "5.0.0" # LATEST
 
   availability_zone                            = local.availability_zone
   executor_instance_tag                        = "codeintel-prod"
@@ -14,7 +14,6 @@ module "executors" {
   executor_queue_name                          = "codeintel"
   executor_metrics_environment_label           = "prod"
   executor_use_firecracker                     = true
-  # TODO uncomment when cutting release
-  #  randomize_resource_names                     = true
-  #   private_networking                           = true
+  randomize_resource_names                     = true
+  private_networking                           = true
 }
