@@ -255,6 +255,8 @@ resource "random_id" "autoscaling_group" {
   byte_length = 6
 }
 
+data "aws_default_tags" "current" {}
+
 resource "aws_autoscaling_group" "autoscaler" {
   name                      = local.autoscaling_group.name
   min_size                  = var.min_replicas
@@ -288,6 +290,15 @@ resource "aws_autoscaling_group" "autoscaler" {
     key                 = "name"
     value               = local.autoscaling_group.name
     propagate_at_launch = true
+  }
+
+  dynamic "tag" {
+    for_each = data.aws_default_tags.current.tags
+    content {
+      key                 = tag.key
+      value               = tag.value
+      propagate_at_launch = true
+    }
   }
 
   launch_template {
