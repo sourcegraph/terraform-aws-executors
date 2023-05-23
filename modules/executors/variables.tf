@@ -204,6 +204,6 @@ variable "randomize_resource_names" {
 
 variable "permissions_boundary_arn" {
   type        = string
-  default     = null
+  default     = ""
   description = "ARN for permissions boundaries on IAM users and roles created by this module"
 }
