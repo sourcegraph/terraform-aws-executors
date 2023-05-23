@@ -224,5 +224,5 @@ variable "randomize_resource_names" {
 variable "permissions_boundary_arn" {
   type        = string
   default     = ""
-  description = "The ARN of a permissions boundary policy for further security measures on newly created IAM roles and users"
+  description = "If not provided, there will be no permissions boundary on IAM roles and users created. The ARN of a policy to use for permissions boundaries with IAM roles and users."
 }

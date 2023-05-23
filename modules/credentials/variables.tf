@@ -7,5 +7,5 @@ variable "resource_prefix" {
 variable "permissions_boundary_arn" {
   type        = string
   default     = ""
-  description = "ARN for permissions boundaries on IAM users and roles created by this module"
+  description = "If not provided, there will be no permissions boundary on IAM roles and users created. The ARN of a policy to use for permissions boundaries with IAM roles and users."
 }
