@@ -57,17 +57,17 @@ case $os in
     echo "Updating links in READMEs..."
     find . -type f -iname "*.md" -exec sed -i -e "s/$latest_tag/$new_tag/g" {} +
     echo "Updating version in './examples..."
-    find . -type f -iname "*.tf" -exec sed -i -e "s/$latest_tag/$new_tag/g" {} +
+    find . -type f -iname "*.tf" ! -name "providers.tf" -exec sed -i -e "s/$latest_tag/$new_tag/g" {} +
     echo "Updating version in modules..."
-    find . -type f -iname "*.tf" -exec sed -i -e "s/$(get_modified_tag "$latest_tag")/$(get_modified_tag "$new_tag")/g" {} +
+    find . -type f -iname "*.tf" ! -name "providers.tf" -exec sed -i -e "s/$(get_modified_tag "$latest_tag")/$(get_modified_tag "$new_tag")/g" {} +
     ;;
   'Darwin')
     echo "Updating links in READMEs..."
     find . -type f -iname "*.md" -exec sed -i '' "s/$latest_tag/$new_tag/g" {} +
     echo "Updating version in './examples..."
-    find . -type f -iname "*.tf" -exec sed -i '' "s/$latest_tag/$new_tag/g" {} +
+    find . -type f -iname "*.tf" ! -name "providers.tf" -exec sed -i '' "s/$latest_tag/$new_tag/g" {} +
     echo "Updating version in modules..."
-    find . -type f -iname "*.tf" -exec sed -i '' "s/$(get_modified_tag "$latest_tag")/$(get_modified_tag "$new_tag")/g" {} +
+    find . -type f -iname "*.tf" ! -name "providers.tf" -exec sed -i '' "s/$(get_modified_tag "$latest_tag")/$(get_modified_tag "$new_tag")/g" {} +
     ;;
   *)
     echo "Only Mac and Linux are supported"
