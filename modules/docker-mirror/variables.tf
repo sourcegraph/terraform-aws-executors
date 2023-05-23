@@ -94,3 +94,9 @@ variable "randomize_resource_names" {
   type        = bool
   description = "Use randomized names for resources. Deployments using the legacy naming convention will be updated in-place with randomized names when enabled."
 }
+
+variable "permissions_boundary_arn" {
+  type        = string
+  default     = null
+  description = "ARN for permissions boundaries on IAM users and roles created by this module"
+}

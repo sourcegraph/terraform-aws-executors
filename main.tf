@@ -23,6 +23,7 @@ module "aws-docker-mirror" {
   instance_tag_prefix                    = var.executor_instance_tag
   assign_public_ip                       = var.private_networking ? false : true
   docker_mirror_access_security_group_id = var.security_group_id
+  permissions_boundary_arn               = var.permissions_boundary_arn
 }
 
 module "aws-executor" {
@@ -58,4 +59,5 @@ module "aws-executor" {
   assign_public_ip                         = var.private_networking ? false : true
   metrics_access_security_group_id         = var.security_group_id
   docker_auth_config                       = var.executor_docker_auth_config
+  permissions_boundary_arn                 = var.permissions_boundary_arn
 }

@@ -3,3 +3,9 @@ variable "resource_prefix" {
   default     = ""
   description = "An optional prefix to add to all resources created."
 }
+
+variable "permissions_boundary_arn" {
+  type        = string
+  default     = null
+  description = "ARN for permissions boundaries on IAM users and roles created by this module"
+}

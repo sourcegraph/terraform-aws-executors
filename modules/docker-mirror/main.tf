@@ -199,6 +199,8 @@ resource "aws_iam_role" "ec2-role" {
   name = "sourcegraph_executors_docker_mirror"
   path = "/"
 
+  permissions_boundary = var.permissions_boundary_arn != "" ? var.permissions_boundary_arn : ""
+
   assume_role_policy = <<EOF
 {
     "Version": "2012-10-17",

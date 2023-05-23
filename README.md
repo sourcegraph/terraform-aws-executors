@@ -31,7 +31,7 @@ The [single-executor example](https://github.com/sourcegraph/terraform-aws-execu
 
 ## Setup
 
-Please follow our [setup guide](https://docs.sourcegraph.com/admin/deploy_executors_terraform) on how to deploy
+Please follow our [setup guide](https://docs.sourcegraph.com/admin/executors/deploy_executors_terraform) on how to deploy
 executors using Terraform.
 
 ### Custom Security Group
