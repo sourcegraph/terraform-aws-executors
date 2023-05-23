@@ -4,6 +4,8 @@ locals {
 
 resource "aws_iam_user" "metric_writer" {
   name = "${substr(local.prefix, 0, 14)}-metric-writer"
+
+  permissions_boundary = var.permissions_boundary_arn != "" ? var.permissions_boundary_arn : ""
 }
 
 resource "aws_iam_user_policy" "metric_writer" {
