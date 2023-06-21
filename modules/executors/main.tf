@@ -2,6 +2,10 @@ locals {
   autoscaling        = var.min_replicas != var.max_replicas
   prefix             = var.resource_prefix != "" ? "${var.resource_prefix}_sourcegraph_" : "sourcegraph_"
   scaling_expression = "CEIL(queueSize / ${var.jobs_per_instance_scaling}) - instanceCount"
+  queue_names        = var.queue_names != null ? join(",", sort(var.queue_names)) : ""
+  // TODO: this is how the field is set in util.workerOptions when metrics are initialised.
+  // Should be split into a queue/queues metric field
+  metric_queue_val = var.queue_name != "" ? var.queue_name : replace(local.queue_names, ",", "_")
 
   security_group = {
     name = var.randomize_resource_names ? "${local.prefix}executors-${random_id.security_group[0].hex}" : "${var.resource_prefix}SourcegraphExecutorsMetricsAccess"
@@ -225,6 +229,7 @@ resource "aws_launch_template" "executor" {
       "EXECUTOR_JOB_MEMORY"                 = var.job_memory != "" ? var.job_memory : var.firecracker_memory
       "EXECUTOR_FIRECRACKER_DISK_SPACE"     = var.firecracker_disk_space
       "EXECUTOR_QUEUE_NAME"                 = var.queue_name
+      "EXECUTOR_QUEUE_NAMES"                = local.queue_names
       "EXECUTOR_MAXIMUM_RUNTIME_PER_JOB"    = var.maximum_runtime_per_job
       "EXECUTOR_NUM_TOTAL_JOBS"             = var.num_total_jobs
       "EXECUTOR_MAX_ACTIVE_TIME"            = var.max_active_time
@@ -338,7 +343,7 @@ resource "aws_cloudwatch_metric_alarm" "scale_out_alarm" {
 
       dimensions = {
         "environment" = var.metrics_environment_label
-        "queueName"   = var.queue_name
+        "queueName"   = local.metric_queue_val
       }
     }
   }
@@ -415,7 +420,7 @@ resource "aws_cloudwatch_metric_alarm" "scale_in_alarm" {
 
       dimensions = {
         "environment" = var.metrics_environment_label
-        "queueName"   = var.queue_name
+        "queueName"   = local.metric_queue_val
       }
     }
   }
