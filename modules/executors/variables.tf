@@ -80,7 +80,14 @@ variable "sourcegraph_executor_proxy_password" {
 
 variable "queue_name" {
   type        = string
-  description = "The queue from which the executor should dequeue jobs."
+  default     = ""
+  description = "The single queue from which the executor should dequeue jobs. Either this or `queue_names` is required"
+}
+
+variable "queue_names" {
+  type        = list(string)
+  default     = null
+  description = "The multiple queues from which the executor should dequeue jobs. Either this or `queue_name` is required"
 }
 
 variable "maximum_runtime_per_job" {
