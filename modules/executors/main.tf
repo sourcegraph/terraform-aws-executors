@@ -17,7 +17,7 @@ locals {
     name = var.randomize_resource_names ? "${local.prefix}executors-${random_id.iam_instance_profile[0].hex}" : "${local.prefix}_executors"
   }
   launch_template = {
-    name = var.randomize_resource_names ? "${local.prefix}executors-${random_id.launch_template[0].hex}" : null
+    name = var.randomize_resource_names ? "${local.prefix}executors-${random_id.launch_template[0].hex}" : "${local.prefix}executors"
   }
   autoscaling_group = {
     name = var.randomize_resource_names && local.autoscaling ? "${local.prefix}executors-${random_id.autoscaling_group[0].hex}" : "${local.prefix}executors"
