@@ -61,4 +61,5 @@ module "aws-executor" {
   metrics_access_security_group_id         = var.security_group_id
   docker_auth_config                       = var.executor_docker_auth_config
   permissions_boundary_arn                 = var.permissions_boundary_arn
+  private_ca_cert_path                     = var.private_ca_cert_path
 }
