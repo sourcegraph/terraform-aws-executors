@@ -38,7 +38,6 @@ locals {
       name = var.randomize_resource_names && local.autoscaling ? "${local.prefix}executors-${random_id.autoscaling_policy_in[0].hex}" : "${local.prefix}executor_queue_scale_in"
     }
   }
-  # private_ca_cert = var.private_ca_cert_path != "" ? file(var.private_ca_cert_path) : ""
 }
 
 resource "aws_iam_role" "ec2-role" {
