@@ -39,7 +39,7 @@ locals {
     }
   }
 
-  specified_version = join("-", split(".", replace(var.sourcegraph_version, "v", "")))
+  specified_version = join("-", split(".", replace(var.ami_version, "v", "")))
 }
 
 resource "aws_iam_role" "ec2-role" {
@@ -168,7 +168,7 @@ data "aws_ami" "latest_ami" {
 }
 
 data "aws_ami" "ami" {
-  count       = var.sourcegraph_version == "" ? 0 : 1
+  count       = var.ami_version == "" ? 0 : 1
   most_recent = true
   owners      = ["185007729374"]
 
@@ -200,8 +200,8 @@ resource "random_id" "launch_template" {
 resource "aws_launch_template" "executor" {
   instance_type = var.machine_type
 
-  # Order of precedence: machine_image > sourcegraph_version > latest_ami
-  image_id = var.machine_image != "" ? var.machine_image : var.sourcegraph_version != "" ? data.aws_ami.ami.0.image_id : data.aws_ami.latest_ami.0.image_id
+  # Order of precedence: machine_image > ami_version > latest_ami
+  image_id = var.machine_image != "" ? var.machine_image : var.ami_version != "" ? data.aws_ami.ami.0.image_id : data.aws_ami.latest_ami.0.image_id
 
   block_device_mappings {
     device_name = "/dev/sda1"
