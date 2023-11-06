@@ -33,7 +33,7 @@ variable "ami_version" {
 
   validation {
     condition     = can(regex("^v?(\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z-.]+)?(\\+[0-9A-Za-z-.]+)?)?$", var.ami_version))
-    error_message = "The Soucegraph ami version must be valid semver"
+    error_message = "The Soucegraph ami version must be valid semver."
   }
 }
 
