@@ -17,6 +17,7 @@ module "aws-docker-mirror" {
   http_access_cidr_range                 = module.aws-networking.ip_cidr
   machine_ami                            = var.docker_mirror_machine_ami
   machine_type                           = var.docker_mirror_machine_type
+  sourcegraph_version                    = var.sourcegraph_version
   boot_disk_size                         = var.docker_mirror_boot_disk_size
   static_ip                              = var.docker_mirror_static_ip
   ssh_access_cidr_range                  = var.docker_mirror_ssh_access_cidr_range
@@ -35,6 +36,7 @@ module "aws-executor" {
   subnet_id                                = module.aws-networking.subnet_id
   machine_image                            = var.executor_machine_image
   machine_type                             = var.executor_machine_type
+  sourcegraph_version                      = var.sourcegraph_version
   boot_disk_size                           = var.executor_boot_disk_size
   preemptible_machines                     = var.executor_preemptible_machines
   instance_tag                             = var.executor_instance_tag
