@@ -38,6 +38,8 @@ locals {
       name = var.randomize_resource_names && local.autoscaling ? "${local.prefix}executors-${random_id.autoscaling_policy_in[0].hex}" : "${local.prefix}executor_queue_scale_in"
     }
   }
+
+  specified_version = join("-", split(".", replace(var.sourcegraph_version, "v", "")))
 }
 
 resource "aws_iam_role" "ec2-role" {
@@ -165,6 +167,27 @@ data "aws_ami" "latest_ami" {
   }
 }
 
+data "aws_ami" "ami" {
+  count       = var.machine_image != "" ? 0 : 1
+  most_recent = true
+  owners      = ["185007729374"]
+
+  filter {
+    name   = "name"
+    values = ["sourcegraph-executors-${local.specified_version}"]
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
 resource "random_id" "launch_template" {
   count       = var.randomize_resource_names ? 1 : 0
   byte_length = 6
@@ -176,7 +199,9 @@ resource "random_id" "launch_template" {
 # policy.
 resource "aws_launch_template" "executor" {
   instance_type = var.machine_type
-  image_id      = var.machine_image != "" ? var.machine_image : data.aws_ami.latest_ami.0.image_id
+
+  # Order of precedence: machine_image > sourcegraph_version > latest_ami
+  image_id = var.machine_image != "" ? var.machine_image : var.sourcegraph_version != "" ? data.aws_ami.ami.0.image_id : data.aws_ami.latest_ami.0.image_id
 
   block_device_mappings {
     device_name = "/dev/sda1"
