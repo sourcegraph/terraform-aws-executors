@@ -20,6 +20,17 @@ variable "machine_type" {
   description = "Docker registry mirror node machine type."
 }
 
+variable "sourcegraph_version" {
+  type        = string
+  default     = ""
+  description = "Specify a Sourcegraph executor version to use rather than pulling latest"
+
+  validation {
+    condition     = can(regex("^v?(\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z-.]+)?(\\+[0-9A-Za-z-.]+)?)?$", var.sourcegraph_version))
+    error_message = "The Soucegraph version must be valid semver"
+  }
+}
+
 variable "boot_disk_size" {
   type        = number
   default     = 32

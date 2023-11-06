@@ -16,6 +16,8 @@ locals {
   security_group = {
     name = var.randomize_resource_names ? "${local.resource_prefix}SourcegraphExecutorsDockerMirrorAccess-${random_id.security_group[0].hex}" : "SourcegraphExecutorsDockerMirrorAccess"
   }
+
+  specified_version = join("-", split(".", replace(var.sourcegraph_version, "v", "")))
 }
 
 resource "random_id" "cloudwatch_log_group" {
@@ -60,6 +62,27 @@ data "aws_ami" "latest_ami" {
   }
 }
 
+data "aws_ami" "ami" {
+  count       = var.machine_ami != "" ? 0 : 1
+  most_recent = true
+  owners      = ["185007729374"]
+
+  filter {
+    name   = "name"
+    values = ["sourcegraph-executors-docker-mirror-${local.specified_version}"]
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
 resource "random_id" "instance" {
   count       = var.randomize_resource_names ? 1 : 0
   byte_length = 6
@@ -67,7 +90,8 @@ resource "random_id" "instance" {
 
 # The docker registry mirror EC2 instance.
 resource "aws_instance" "default" {
-  ami           = var.machine_ami != "" ? var.machine_ami : data.aws_ami.latest_ami.0.image_id
+  # Order of precedence: machine_ami > sourcegraph_version > latest_ami
+  ami           = var.machine_ami != "" ? var.machine_ami : var.sourcegraph_version != "" ? data.aws_ami.ami.0.image_id : data.aws_ami.latest_ami.0.image_id
   instance_type = var.machine_type
 
   root_block_device {
