@@ -27,6 +27,10 @@ if [ "$${EXECUTOR_DOCKER_REGISTRY_MIRROR}" != '' ]; then
   fi
 fi
 
+if [ "$${PRIVATE_CA_CERTIFICATE}" != '' ]; then
+  echo "$${PRIVATE_CA_CERTIFICATE}" > /etc/ssl/certs/private_ca_cert.pem
+fi
+
 # Write the systemd environment file used by the executor service
 cat <<EOF >/etc/systemd/system/executor.env
 EXECUTOR_QUEUE_NAME="$${EXECUTOR_QUEUE_NAME}"
