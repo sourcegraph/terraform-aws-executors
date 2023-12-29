@@ -17,30 +17,58 @@ input:
   - image_family
   - prev_version
 
-internal:
+# No internal steps since any release in this repo is public
+
+test:
+  steps:
+    - name: "correct amount of new version tags in README"
+      cmd: |
+        count=$(grep -c '{{tag}}' README.md)
+        expected=8
+        if [[ ${count} -ne ${expected} ]]; then
+          echo "expected ${expected} new version tags of \"{{tag}}\" in README.md, got ${count}"
+          exit 1
+        fi
+    - name: "correct amount of .tf files"
+      cmd: |
+        count=$(comby -match-only '"{{tag}}"' '' -f .tf | wc -l)
+        expected=6
+        if [[ ${count} -ne ${expected} ]]; then
+          echo "expected ${expected} .tf files to be updated with \"{{tag}}\" but got ${count}"
+          exit 1
+        fi
+    - name: "sourcegraph-executors-docker-mirror image family has correct version"
+      cmd: |
+        count=$(comby -match-only '["sourcegraph-executors-docker-mirror-{{inputs.image_family.tag}}-*"]' '' -f .tf | wc -l)
+        expected=1
+        if [[ ${count} -ne ${expected} ]]; then
+          echo "expected ${expected} file to have the correct image family set but got but got ${count} files"
+          exit 1
+        fi
+    - name: "sourcegraph-executors image family has correct version"
+      cmd: |
+        count=$(comby -match-only '["sourcegraph-executors-{{inputs.image_family.tag}}-*"]' '' -f .tf | wc -l)
+        expected=1
+        if [[ ${count} -ne ${expected} ]]; then
+          echo "expected ${expected} file to have the correct image family set but got but got ${count} files"
+          exit 1
+        fi
+
+
+promoteToPublic:
   create:
     steps:
-      minor:
-        - name: "update links in READMEs"
-          cmd: comby -in-place '{{inputs.prev_version.tag}}' '{{tag}}' README.md
-        - name: "update version in examples"
-          cmd: comby '"{{inputs.prev_version.tag}}"' '"{{tag}}"' -i -f .tf -exclude proivders.tf
-        - name: "update executors docker-mirror image name"
-          cmd: comby '["sourcegraph-executors-docker-mirror-:[~\d+-\d+]-*"]' '["sourcegraph-executors-docker-mirror-{{inputs.image_family.tag}}-*"]' -i -f .tf
-        - name: "update executors image name"
-          cmd: comby '["sourcegraph-executors-:[~\d+-\d+]-*"]' '["sourcegraph-executors-{{inputs.image_family.tag}}-*"]' -i -f .tf
-      major:
-        - name: "update links in READMEs"
-          cmd: comby -in-place '{{inputs.prev_version.tag}}' '{{tag}}' README.md
-        - name: "update version in examples"
-          cmd: comby '"{{inputs.prev_version.tag}}"' '"{{tag}}"' -i -f .tf -exclude proivders.tf
-        - name: "update executors docker mirror image name"
-          cmd: comby '["sourcegraph-executors-docker-mirror-:[~\d+-\d+]-*"]' '["sourcegraph-executors-docker-mirror-{{inputs.image_family.tag}}-*"]' -i -f .tf
-        - name: "update executors image name"
-          cmd: comby '["sourcegraph-executors-:[~\d+-\d+]-*"]' '["sourcegraph-executors-{{inputs.image_family.tag}}-*"]' -i -f .tf
+      - name: "update links in READMEs"
+        cmd: comby -in-place '{{inputs.prev_version.tag}}' '{{tag}}' README.md
+      - name: "update version in examples"
+        cmd: comby '"{{inputs.prev_version.tag}}"' '"{{tag}}"' -i -f .tf -exclude providers.tf
+      - name: "update executors docker-mirror image name"
+        cmd: comby '["sourcegraph-executors-docker-mirror-:[~\d+-\d+]-*"]' '["sourcegraph-executors-docker-mirror-{{inputs.image_family.tag}}-*"]' -i -f .tf
+      - name: "update executors image name"
+        cmd: comby '["sourcegraph-executors-:[~\d+-\d+]-*"]' '["sourcegraph-executors-{{inputs.image_family.tag}}-*"]' -i -f .tf
 
-  finalize:
-    steps:
+finalize:
+  steps:
       - name: "create new branch"
         cmd: git switch -c "wb/wip-release-{{tag}}"
       - name: "add changes branch"
@@ -49,16 +77,4 @@ internal:
         cmd: "git push origin wb/wip-release-{{tag}}"
       - name: "create release PR"
         cmd: gh pr create --draft --fill
-test:
-  steps:
-    - name: "test test"
-      cmd: "echo 'test test'"
-promoteToPublic:
-  create:
-    steps:
-      - name: "create test"
-        cmd: "echo 'create test'"
-finalize:
-  steps:
-    - name: "finalize test"
-      cmd: "echo 'finalize test'"
+      # TODO: should we tag here ???
