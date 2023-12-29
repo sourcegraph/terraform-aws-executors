@@ -55,26 +55,36 @@ test:
         fi
 
 
-promoteToPublic:
+internal:
   create:
     steps:
-      - name: "update links in READMEs"
-        cmd: comby -in-place '{{inputs.prev_version.tag}}' '{{tag}}' README.md
-      - name: "update version in examples"
-        cmd: comby '"{{inputs.prev_version.tag}}"' '"{{tag}}"' -i -f .tf -exclude providers.tf
-      - name: "update executors docker-mirror image name"
-        cmd: comby '["sourcegraph-executors-docker-mirror-:[~\d+-\d+]-*"]' '["sourcegraph-executors-docker-mirror-{{inputs.image_family.tag}}-*"]' -i -f .tf
-      - name: "update executors image name"
-        cmd: comby '["sourcegraph-executors-:[~\d+-\d+]-*"]' '["sourcegraph-executors-{{inputs.image_family.tag}}-*"]' -i -f .tf
+      minor:
+        - name: "update links in READMEs"
+          cmd: comby -in-place '{{inputs.prev_version.tag}}' '{{tag}}' README.md
+        - name: "update version in examples"
+          cmd: comby '"{{inputs.prev_version.tag}}"' '"{{tag}}"' -i -f .tf -exclude providers.tf
+        - name: "update executors docker-mirror image name"
+          cmd: comby '["sourcegraph-executors-docker-mirror-:[~\d+-\d+]-*"]' '["sourcegraph-executors-docker-mirror-{{inputs.image_family.tag}}-*"]' -i -f .tf
+        - name: "update executors image name"
+          cmd: comby '["sourcegraph-executors-:[~\d+-\d+]-*"]' '["sourcegraph-executors-{{inputs.image_family.tag}}-*"]' -i -f .tf
+      major:
+        - name: "update links in READMEs"
+          cmd: comby -in-place '{{inputs.prev_version.tag}}' '{{tag}}' README.md
+        - name: "update version in examples"
+          cmd: comby '"{{inputs.prev_version.tag}}"' '"{{tag}}"' -i -f .tf -exclude providers.tf
+        - name: "update executors docker-mirror image name"
+          cmd: comby '["sourcegraph-executors-docker-mirror-:[~\d+-\d+]-*"]' '["sourcegraph-executors-docker-mirror-{{inputs.image_family.tag}}-*"]' -i -f .tf
+        - name: "update executors image name"
+          cmd: comby '["sourcegraph-executors-:[~\d+-\d+]-*"]' '["sourcegraph-executors-{{inputs.image_family.tag}}-*"]' -i -f .tf
 
-finalize:
-  steps:
-      - name: "create new branch"
-        cmd: git switch -c "wb/wip-release-{{tag}}"
-      - name: "add changes branch"
-        cmd: "git commit -am 'WB-WIP: Test Release {{tag}}' -m 'This is a Test release'"
-      - name: "push branch"
-        cmd: "git push origin wb/wip-release-{{tag}}"
-      - name: "create release PR"
-        cmd: gh pr create --draft --fill
-      # TODO: should we tag here ???
+  finalize:
+    steps:
+        - name: "create new branch"
+          cmd: git switch -c "wb/wip-release-{{tag}}"
+        - name: "add changes branch"
+          cmd: "git commit -am 'WB-WIP: Test Release {{tag}}' -m 'This is a Test release'"
+        - name: "push branch"
+          cmd: "git push origin wb/wip-release-{{tag}}"
+        - name: "create release PR"
+          cmd: gh pr create --draft --fill
+        # TODO: should we tag here ???
