@@ -13,10 +13,6 @@ requirements:
   - name: "GitHub cli exists"
     cmd: "which gh"
     fixInstructions: "install GitHub cli"
-input:
-  - image_family
-  - prev_version
-
 # No internal steps since any release in this repo is public
 
 test:
@@ -39,7 +35,9 @@ test:
         fi
     - name: "sourcegraph-executors-docker-mirror image family has correct version"
       cmd: |
-        count=$(comby -match-only '["sourcegraph-executors-docker-mirror-{{inputs.image_family.tag}}-*"]' '' -f .tf | wc -l)
+        echo "{{tag}}" | grep -o -E "[[:digit:]]+\.[[:digit:]]+" | sed 's/\./-/' > family_tag
+        trap 'rm -rf family_tag' EXIT
+        count=$(comby -match-only "[\"sourcegraph-executors-docker-mirror-$(cat family_tag)-*\"]" '' -f .tf | wc -l)
         expected=1
         if [[ ${count} -ne ${expected} ]]; then
           echo "expected ${expected} file to have the correct image family set but got but got ${count} files"
@@ -47,7 +45,9 @@ test:
         fi
     - name: "sourcegraph-executors image family has correct version"
       cmd: |
-        count=$(comby -match-only '["sourcegraph-executors-{{inputs.image_family.tag}}-*"]' '' -f .tf | wc -l)
+        echo "{{tag}}" | grep -o -E "[[:digit:]]+\.[[:digit:]]+" | sed 's/\./-/' > family_tag
+        trap 'rm -rf family_tag' EXIT
+        count=$(comby -match-only "[\"sourcegraph-executors-$(cat family_tag)-*\"]" '' -f .tf | wc -l)
         expected=1
         if [[ ${count} -ne ${expected} ]]; then
           echo "expected ${expected} file to have the correct image family set but got but got ${count} files"
@@ -59,23 +59,43 @@ internal:
   create:
     steps:
       minor:
+        - name: generate required files for release process
+          cmd: |
+            # get previous tag we need to replace
+            git describe --tags "$(git rev-list --tags --max-count=1)" | sed 's/v//' > prev_tag
+            # convert the tag to the image family format which uses hipens and is only for `major-minor`
+            echo "{{tag}}" | grep -o -E "[[:digit:]]+\.[[:digit:]]+" | sed 's/\./-/' > family_tag
         - name: "update links in READMEs"
-          cmd: comby -in-place '{{inputs.prev_version.tag}}' '{{tag}}' README.md
+          cmd: comby -in-place "$(cat prev_tag)" '{{tag}}' README.md
         - name: "update version in examples"
-          cmd: comby '"{{inputs.prev_version.tag}}"' '"{{tag}}"' -i -f .tf -exclude providers.tf
+          cmd: comby "\"$(cat prev_tag)\"" '"{{tag}}"' -i -f .tf -exclude providers.tf
         - name: "update executors docker-mirror image name"
-          cmd: comby '["sourcegraph-executors-docker-mirror-:[~\d+-\d+]-*"]' '["sourcegraph-executors-docker-mirror-{{inputs.image_family.tag}}-*"]' -i -f .tf
+          cmd: comby '["sourcegraph-executors-docker-mirror-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-docker-mirror-$(cat family_tag)-*\"]" -i -f .tf
         - name: "update executors image name"
-          cmd: comby '["sourcegraph-executors-:[~\d+-\d+]-*"]' '["sourcegraph-executors-{{inputs.image_family.tag}}-*"]' -i -f .tf
+          cmd: comby '["sourcegraph-executors-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-$(cat family_tag)-*\"]" -i -f .tf
+        - name: "remove generated files"
+          cmd: |
+            rm -vf family_tag
+            rm -vf prev_tag
       major:
+        - name: generate required files for release process
+          cmd: |
+            # get previous tag we need to replace
+            git describe --tags "$(git rev-list --tags --max-count=1)" | sed 's/v//' > prev_tag
+            # convert the tag to the image family format which uses hipens and is only for `major-minor`
+            echo "{{tag}}" | grep -o -E "[[:digit:]]+\.[[:digit:]]+" | sed 's/\./-/' > family_tag
         - name: "update links in READMEs"
-          cmd: comby -in-place '{{inputs.prev_version.tag}}' '{{tag}}' README.md
+          cmd: comby -in-place "$(cat prev_tag)" '{{tag}}' README.md
         - name: "update version in examples"
-          cmd: comby '"{{inputs.prev_version.tag}}"' '"{{tag}}"' -i -f .tf -exclude providers.tf
+          cmd: comby "\"$(cat prev_tag)\"" '"{{tag}}"' -i -f .tf -exclude providers.tf
         - name: "update executors docker-mirror image name"
-          cmd: comby '["sourcegraph-executors-docker-mirror-:[~\d+-\d+]-*"]' '["sourcegraph-executors-docker-mirror-{{inputs.image_family.tag}}-*"]' -i -f .tf
+          cmd: comby '["sourcegraph-executors-docker-mirror-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-docker-mirror-$(cat family_tag)-*\"]" -i -f .tf
         - name: "update executors image name"
-          cmd: comby '["sourcegraph-executors-:[~\d+-\d+]-*"]' '["sourcegraph-executors-{{inputs.image_family.tag}}-*"]' -i -f .tf
+          cmd: comby '["sourcegraph-executors-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-$(cat family_tag)-*\"]" -i -f .tf
+        - name: "remove generated files"
+          cmd: |
+            rm -vf family_tag
+            rm -vf prev_tag
 
   finalize:
     steps:
@@ -83,6 +103,8 @@ internal:
           cmd: git switch -c "wb/wip-release-{{tag}}"
         - name: "add changes branch"
           cmd: "git commit -am 'WB-WIP: Test Release {{tag}}' -m 'This is a Test release'"
+
+          cmd: "git tag -a {{tag}} -m 'WIP Release {{tag}}'"
         - name: "push branch"
           cmd: "git push origin wb/wip-release-{{tag}}"
         - name: "create release PR"
