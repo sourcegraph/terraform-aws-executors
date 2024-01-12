@@ -1,6 +1,6 @@
 # Terraform module for Sourcegraph executors (AWS)
 
-This repository provides a [Terraform module](https://learn.hashicorp.com/tutorials/terraform/module-use?in=terraform/modules) to provision [Sourcegraph executor](https://docs.sourcegraph.com/admin/executors) compute resources on AWS. If you are installing executors for the first time, [follow our complete setup guide](https://docs.sourcegraph.com/admin/deploy_executors).
+This repository provides a [Terraform module](https://learn.hashicorp.com/tutorials/terraform/module-use?in=terraform/modules) to provision [Sourcegraph executor](https://sourcegraph.com/docs/admin/executors) compute resources on AWS. If you are installing executors for the first time, [follow our complete setup guide](https://sourcegraph.com/docs/admin/executors/deploy_executors).
 
 ![Infrastructure overview](https://raw.githubusercontent.com/sourcegraph/terraform-aws-executors/master/images/infrastructure.png)
 
@@ -13,7 +13,7 @@ This repository provides four submodules:
 
 The [multiple-executors example](https://github.com/sourcegraph/terraform-aws-executors/blob/v5.2.0/examples/multiple-executors) uses the submodule directly to provision multiple executor resource groups performing different types of work. Follow this example if you are:
 
-1. Provisioning executors for use with multiple features (e.g., both [auto-indexing](https://docs.sourcegraph.com/code_intelligence/explanations/auto_indexing) and [server-side batch changes](https://docs.sourcegraph.com/batch_changes/explanations/server_side)), or
+1. Provisioning executors for use with multiple features (e.g., both [auto-indexing](https://sourcegraph.com/docs/code_intelligence/explanations/auto_indexing) and [server-side batch changes](https://sourcegraph.com/docs/batch_changes/explanations/server_side)), or
 2. Provisioning resources for multiple Sourcegraph instances (e.g., test, prod)
 
 This repository also provides a [root module](https://registry.terraform.io/modules/sourcegraph/executors/aws/5.2.0) combining the executors, network, and docker-mirror resources into an easier to use package.
@@ -31,7 +31,7 @@ The [single-executor example](https://github.com/sourcegraph/terraform-aws-execu
 
 ## Setup
 
-Please follow our [setup guide](https://docs.sourcegraph.com/admin/executors/deploy_executors_terraform) on how to deploy
+Please follow our [setup guide](https://sourcegraph.com/docs/admin/executors/deploy_executors_terraform) on how to deploy
 executors using Terraform.
 
 ### Custom Security Group
