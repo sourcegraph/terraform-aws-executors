@@ -16,21 +16,21 @@ internal:
   create:
     steps:
       minor:
-        - name: generate required files for release process
+        - name: "git:prev_tag"
           cmd: |
             # get previous tag we need to replace
             git describe --tags "$(git rev-list --tags --max-count=1)" | sed 's/v//' > prev_tag
             # convert the tag to the image family format which uses hipens and is only for `major-minor`
             echo "{{tag}}" | grep -o -E "[[:digit:]]+\.[[:digit:]]+" | sed 's/\./-/' > family_tag
-        - name: "update links in READMEs"
+        - name: "files(README.md)"
           cmd: comby -in-place "$(cat prev_tag)" '{{tag}}' README.md
-        - name: "update version in examples"
+        - name: "files(tf)"
           cmd: comby "\"$(cat prev_tag)\"" '"{{tag}}"' -i -f .tf -exclude providers.tf
-        - name: "update executors docker-mirror image name"
+        - name: "docker:image"
           cmd: comby '["sourcegraph-executors-docker-mirror-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-docker-mirror-$(cat family_tag)-*\"]" -i -f .tf
-        - name: "update executors image name"
+        - name: "family:name"
           cmd: comby '["sourcegraph-executors-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-$(cat family_tag)-*\"]" -i -f .tf
-        - name: "remove generated files"
+        - name: "cleanup"
           cmd: |
             rm -vf family_tag
             rm -vf prev_tag
@@ -39,22 +39,26 @@ internal:
             branch="wb/wip_{{version}}"
             git switch -c "${branch}"
             git commit -am 'release-minor: {{version}}' -m '{{config}}'
+            git push origin ${branch}
+        - name: "gh"
+          cmd: |
+            gh pr create -f -t "PRETEND RELEASE WIP: release_minor: build {{version}}" --body "Test plan: automated release PR, CI will perform additional checks"
       major:
-        - name: generate required files for release process
+        - name: "git:prev_tag"
           cmd: |
             # get previous tag we need to replace
             git describe --tags "$(git rev-list --tags --max-count=1)" | sed 's/v//' > prev_tag
             # convert the tag to the image family format which uses hipens and is only for `major-minor`
             echo "{{tag}}" | grep -o -E "[[:digit:]]+\.[[:digit:]]+" | sed 's/\./-/' > family_tag
-        - name: "update links in READMEs"
+        - name: "files(README.md)"
           cmd: comby -in-place "$(cat prev_tag)" '{{tag}}' README.md
-        - name: "update version in examples"
+        - name: "files(tf)"
           cmd: comby "\"$(cat prev_tag)\"" '"{{tag}}"' -i -f .tf -exclude providers.tf
-        - name: "update executors docker-mirror image name"
+        - name: "docker:image"
           cmd: comby '["sourcegraph-executors-docker-mirror-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-docker-mirror-$(cat family_tag)-*\"]" -i -f .tf
-        - name: "update executors image name"
+        - name: "family:name"
           cmd: comby '["sourcegraph-executors-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-$(cat family_tag)-*\"]" -i -f .tf
-        - name: "remove generated files"
+        - name: "cleanup"
           cmd: |
             rm -vf family_tag
             rm -vf prev_tag
@@ -62,23 +66,25 @@ internal:
           cmd: |
             branch="wb/wip_{{version}}"
             git switch -c "${branch}"
-            git commit -am 'release-major: {{version}}' -m '{{config}}'
-
+            git commit -am 'release-minor: {{version}}' -m '{{config}}'
+            git push origin ${branch}
+        - name: "gh"
+          cmd: |
+            gh pr create -f -t "PRETEND RELEASE WIP: release_major: build {{version}}" --body "Test plan: automated release PR, CI will perform additional checks"
   finalize:
     steps:
-        - name: "create new branch"
-          cmd: git switch "wb/wip-release-{{tag}}"
-        - name: "add changes branch"
-          cmd: "git commit -am 'WB-WIP: Test Release {{tag}}' -m 'This is a Test release'"
+      - name: "git:finalize"
+        cmd: |
+          set -e
+          branch="wip-release-{{version}}"
+          git switch -c "${branch}"
+          echo "pushing branch ${branch}"
+          git push origin "${branch}"
+          git checkout -
 
-          cmd: "git tag -a {{tag}} -m 'WIP Release {{tag}}'"
-        - name: "push branch"
-          cmd: "git push origin wb/wip-release-{{tag}}"
-        - name: "create release PR"
-          cmd: gh pr create --draft --fill
 test:
   steps:
-    - name: "correct amount of new version tags in README"
+    - name: "changes:README"
       cmd: |
         count=$(grep -c '{{tag}}' README.md)
         expected=8
@@ -86,7 +92,7 @@ test:
           echo "expected ${expected} new version tags of \"{{tag}}\" in README.md, got ${count}"
           exit 1
         fi
-    - name: "correct amount of .tf files"
+    - name: "changed:tf"
       cmd: |
         count=$(comby -match-only '"{{tag}}"' '' -f .tf | wc -l)
         expected=6
@@ -94,7 +100,7 @@ test:
           echo "expected ${expected} .tf files to be updated with \"{{tag}}\" but got ${count}"
           exit 1
         fi
-    - name: "sourcegraph-executors-docker-mirror image family has correct version"
+    - name: changes:family(docker-mirror)""
       cmd: |
         echo "{{tag}}" | grep -o -E "[[:digit:]]+\.[[:digit:]]+" | sed 's/\./-/' > family_tag
         trap 'rm -rf family_tag' EXIT
@@ -104,7 +110,7 @@ test:
           echo "expected ${expected} file to have the correct image family set but got but got ${count} files"
           exit 1
         fi
-    - name: "sourcegraph-executors image family has correct version"
+    - name: "changes:family(sourcegraph)"
       cmd: |
         echo "{{tag}}" | grep -o -E "[[:digit:]]+\.[[:digit:]]+" | sed 's/\./-/' > family_tag
         trap 'rm -rf family_tag' EXIT
@@ -118,31 +124,43 @@ test:
 promoteToPublic:
   create:
     steps:
-      - name: generate required files for release process
+      - name: git:prev_tag
         cmd: |
           # get previous tag we need to replace
           git describe --tags "$(git rev-list --tags --max-count=1)" | sed 's/v//' > prev_tag
           # convert the tag to the image family format which uses hipens and is only for `major-minor`
           echo "{{tag}}" | grep -o -E "[[:digit:]]+\.[[:digit:]]+" | sed 's/\./-/' > family_tag
-      - name: "update links in READMEs"
+      - name: "files(README.md)"
         cmd: comby -in-place "$(cat prev_tag)" '{{tag}}' README.md
-      - name: "update version in examples"
+      - name: "files(tf)"
         cmd: comby "\"$(cat prev_tag)\"" '"{{tag}}"' -i -f .tf -exclude providers.tf
-      - name: "update executors docker-mirror image name"
+      - name: "family(docker-mirror)"
         cmd: comby '["sourcegraph-executors-docker-mirror-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-docker-mirror-$(cat family_tag)-*\"]" -i -f .tf
-      - name: "update executors image name"
+      - name: "family(sourcegraph-executors)"
         cmd: comby '["sourcegraph-executors-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-$(cat family_tag)-*\"]" -i -f .tf
-      - name: "remove generated files"
+      - name: "cleanup"
         cmd: |
           rm -vf family_tag
           rm -vf prev_tag
       - name: "git:branch"
         cmd: |
-          branch="wb/promote_wip_{{version}}"
+          branch="promote-release-{{version}}"
           git switch -c "${branch}"
           git commit -am 'promote-release: {{version}}' -m '{{config}}'
-      - name: "git:push"
-        cmd: git push origin wb/promote_wip_{{version}}
-      - name: "GitHub:create PR"
+          git push origin "${branch}"
+      - name: "gh"
         cmd: |
-          gh pr create -f -t "PRETEND PROMOTE RELEASE - release: build {{version}}"
+          set -e
+          remote_branch="wip-release-{{version}}"
+          # we need to fetch from origin just in case this branch doesn't exist locally, so that the PR can find the base
+          git fetch origin "${remote_branch}"
+          gh pr create -f -t "PRETEND PROMOTE RELEASE - release: build {{version}}" --base "${remote_branch}" --body "Test plan: automated release PR, CI will perform additional checks"
+  finalize:
+    steps:
+      - name: git:tag
+        cmd: |
+          set -e
+          branch="wip-release-{{version}}"
+          git checkout "${branch}"
+          git tag wip-{{version}}
+          git push origin ${branch} --tags
