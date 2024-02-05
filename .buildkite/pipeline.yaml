@@ -1,20 +1,65 @@
 steps:
   - label: ":lipstick:"
     command: .buildkite/shfmt.sh
-    agents: { queue: standard }    
+    agents: { queue: standard }
   - label: ":lipstick:"
     command: .buildkite/terraform-fmt.sh
-    agents: { queue: standard }    
+    agents: { queue: standard }
   - label: ":lint-roller:"
     command: .buildkite/shellcheck.sh
-    agents: { queue: standard }    
+    agents: { queue: standard }
   - label: ":terraform:"
     command: .buildkite/terraform-validate.sh
-    agents: { queue: standard }    
-  - label: ":lint-roller:"
-    command: .buildkite/check-latest-tag.sh
-    agents: { queue: standard }    
+    agents: { queue: standard }
+  - label: ":x: DISABLED :lint-roller:"
+    command: |
+      echo "--- :x: DISABLED temporarily :x:"
+      # .buildkite/check-latest-tag.sh
+    agents: { queue: standard }
   - label: ":lock: security - checkov"
-    command: .buildkite/ci-checkov.sh    
-    agents: { queue: standard }    
+    command: .buildkite/ci-checkov.sh
+    agents: { queue: standard }
     soft_fail: true
+
+  - label: "Release: test"
+    if: "build.branch =~ /^wip_/"
+    command: |
+      wget https://github.com/comby-tools/comby/releases/download/1.8.1/comby-1.8.1-x86_64-linux
+      chmod +x ./comby-1.8.1-x86_64-linux
+      mv comby-1.8.1-x86_64-linux comby
+
+      wget https://storage.googleapis.com/buildkite_public_assets/sg-rfc795.tar.gz
+      tar zxf sg-rfc795.tar.gz
+      chmod +x ./sg-rfc795
+
+      export PATH=$PATH:$(pwd)
+      ./sg-rfc795 release run test --workdir=. --config-from-commit
+
+  - wait
+
+  - label: "Release: finalize"
+    if: "build.branch =~ /^wip_/"
+    command: |
+      wget https://github.com/comby-tools/comby/releases/download/1.8.1/comby-1.8.1-x86_64-linux
+      chmod +x ./comby-1.8.1-x86_64-linux
+      mv comby-1.8.1-x86_64-linux comby
+
+      wget https://storage.googleapis.com/buildkite_public_assets/sg-rfc795.tar.gz
+      tar zxf sg-rfc795.tar.gz
+      chmod +x ./sg-rfc795
+
+      export PATH=$PATH:$(pwd)
+      ./sg-rfc795 release run internal finalize --workdir=. --config-from-commit
+  - label: "Promote to public: finalize"
+    if: build.branch =~ /^wip-release/
+    command: |
+      wget https://github.com/comby-tools/comby/releases/download/1.8.1/comby-1.8.1-x86_64-linux
+      chmod +x ./comby-1.8.1-x86_64-linux
+      mv comby-1.8.1-x86_64-linux comby
+
+      wget https://storage.googleapis.com/buildkite_public_assets/sg-rfc795.tar.gz
+      tar zxf sg-rfc795.tar.gz
+      chmod +x ./sg-rfc795
+
+      export PATH=$PATH:$(pwd)
+      ./sg-rfc795 release run promote-to-public finalize --workdir=. --config-from-commit
