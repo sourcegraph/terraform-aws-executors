@@ -4,6 +4,8 @@ meta:
   owners:
     - "sourcegraph/release"
   repository: "github.com/sourcegraph/terraform-aws-executors"
+inputs:
+  releaseId: server
 requirements:
   - name: "comby exists"
     cmd: "which comby"
@@ -11,7 +13,6 @@ requirements:
   - name: "GitHub cli exists"
     cmd: "which gh"
     fixInstructions: "install GitHub cli"
-
 internal:
   create:
     steps:
@@ -26,9 +27,9 @@ internal:
           cmd: comby -in-place "$(cat prev_tag)" '{{tag}}' README.md
         - name: "files(tf)"
           cmd: comby "\"$(cat prev_tag)\"" '"{{tag}}"' -i -f .tf -exclude providers.tf
-        - name: "docker:image"
+        - name: "family(name):docker-mirror"
           cmd: comby '["sourcegraph-executors-docker-mirror-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-docker-mirror-$(cat family_tag)-*\"]" -i -f .tf
-        - name: "family:name"
+        - name: "family(name):sourcegraph"
           cmd: comby '["sourcegraph-executors-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-$(cat family_tag)-*\"]" -i -f .tf
         - name: "cleanup"
           cmd: |
@@ -42,7 +43,8 @@ internal:
             git push origin ${branch}
         - name: "gh"
           cmd: |
-            gh pr create -f -t "PRETEND RELEASE WIP: release_minor: build {{version}}" --body "Test plan: automated release PR, CI will perform additional checks"
+            gh pr create -f -t "PRETEND RELEASE WIP: release_minor: build {{version}}" \
+            --body "Test plan: automated release PR, CI will perform additional checks"
       major:
         - name: "git:prev_tag"
           cmd: |
@@ -70,13 +72,14 @@ internal:
             git push origin ${branch}
         - name: "gh"
           cmd: |
-            gh pr create -f -t "PRETEND RELEASE WIP: release_major: build {{version}}" --body "Test plan: automated release PR, CI will perform additional checks"
+            gh pr create -f -t "PRETEND RELEASE WIP: release_minor: build {{version}}" \
+            --body "Test plan: automated release PR, CI will perform additional checks"
   finalize:
     steps:
       - name: "git:finalize"
         cmd: |
           set -e
-          branch="wip-release-{{version}}"
+          branch="wip-internal-release-{{version}}"
           git switch -c "${branch}"
           echo "pushing branch ${branch}"
           git push origin "${branch}"
@@ -124,37 +127,16 @@ test:
 promoteToPublic:
   create:
     steps:
-      - name: git:prev_tag
-        cmd: |
-          # get previous tag we need to replace
-          git describe --tags "$(git rev-list --tags --max-count=1)" | sed 's/v//' > prev_tag
-          # convert the tag to the image family format which uses hipens and is only for `major-minor`
-          echo "{{tag}}" | grep -o -E "[[:digit:]]+\.[[:digit:]]+" | sed 's/\./-/' > family_tag
-      - name: "files(README.md)"
-        cmd: comby -in-place "$(cat prev_tag)" '{{tag}}' README.md
-      - name: "files(tf)"
-        cmd: comby "\"$(cat prev_tag)\"" '"{{tag}}"' -i -f .tf -exclude providers.tf
-      - name: "family(docker-mirror)"
-        cmd: comby '["sourcegraph-executors-docker-mirror-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-docker-mirror-$(cat family_tag)-*\"]" -i -f .tf
-      - name: "family(sourcegraph-executors)"
-        cmd: comby '["sourcegraph-executors-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-$(cat family_tag)-*\"]" -i -f .tf
-      - name: "cleanup"
-        cmd: |
-          rm -vf family_tag
-          rm -vf prev_tag
-      - name: "git:branch"
-        cmd: |
-          branch="promote-release-{{version}}"
-          git switch -c "${branch}"
-          git commit -am 'promote-release: {{version}}' -m '{{config}}'
-          git push origin "${branch}"
-      - name: "gh"
+      - name: git:internal_branch
         cmd: |
           set -e
-          remote_branch="wip-release-{{version}}"
-          # we need to fetch from origin just in case this branch doesn't exist locally, so that the PR can find the base
-          git fetch origin "${remote_branch}"
-          gh pr create -f -t "PRETEND PROMOTE RELEASE - release: build {{version}}" --base "${remote_branch}" --body "Test plan: automated release PR, CI will perform additional checks"
+          branch=wip-internal-release-{{version}}
+          git fetch origin "${branch}
+      - name: "git:branch"
+        cmd: |
+          release_branch="wip-release-{{version}}"
+          git switch -c "${release_branch}"
+          git push origin "${release_branch}"
   finalize:
     steps:
       - name: git:tag
