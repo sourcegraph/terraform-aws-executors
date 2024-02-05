@@ -37,7 +37,7 @@ internal:
             rm -vf prev_tag
         - name: "git:branch"
           cmd: |
-            branch="wb/wip_{{version}}"
+            branch="wip_{{version}}"
             git switch -c "${branch}"
             git commit -am 'release-minor: {{version}}' -m '{{config}}'
             git push origin ${branch}
@@ -66,7 +66,7 @@ internal:
             rm -vf prev_tag
         - name: "git:branch"
           cmd: |
-            branch="wb/wip_{{version}}"
+            branch="wip_{{version}}"
             git switch -c "${branch}"
             git commit -am 'release-minor: {{version}}' -m '{{config}}'
             git push origin ${branch}
@@ -79,10 +79,15 @@ internal:
       - name: "git:finalize"
         cmd: |
           set -e
-          branch="wip-internal-release-{{version}}"
-          git switch -c "${branch}"
-          echo "pushing branch ${branch}"
-          git push origin "${branch}"
+          branch="wip_{{version}}"
+          # ensure we have the latest changes and on the right branch
+          git fetch origin "${branch}"
+          git checkout ${branch}
+
+          finalize_branch="wip-internal-release-{{version}}"
+          git switch -c "${finalize_branch}"
+          echo "pushing branch ${finalize_branch}"
+          git push origin "${finalize_branch}"
           git checkout -
 
 test:
