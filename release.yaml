@@ -37,7 +37,7 @@ internal:
             rm -vf prev_tag
         - name: "git:branch"
           cmd: |
-            branch="wb/wip_{{version}}"
+            branch="wip_{{version}}"
             git switch -c "${branch}"
             git commit -am 'release-minor: {{version}}' -m '{{config}}'
             git push origin ${branch}
@@ -66,7 +66,7 @@ internal:
             rm -vf prev_tag
         - name: "git:branch"
           cmd: |
-            branch="wb/wip_{{version}}"
+            branch="wip_{{version}}"
             git switch -c "${branch}"
             git commit -am 'release-minor: {{version}}' -m '{{config}}'
             git push origin ${branch}
@@ -76,10 +76,15 @@ internal:
             --body "Test plan: automated release PR, CI will perform additional checks"
   finalize:
     steps:
-      - name: "git:finalize"
+      - name: "git:fetch"
         cmd: |
           set -e
-          branch="wip-internal-release-{{version}}"
+          wip_branch="wip_{{version}}
+          git fetch origin "${wip_branch}"
+          git checkout "${wip_branch}"
+      - name: "git:finalize"
+        cmd: |
+          finalize_branch="wip-internal-release-{{version}}"
           git switch -c "${branch}"
           echo "pushing branch ${branch}"
           git push origin "${branch}"
@@ -127,19 +132,26 @@ test:
 promoteToPublic:
   create:
     steps:
-      - name: git:internal_branch
+      - name: git:fetch_internal
         cmd: |
           set -e
           branch=wip-internal-release-{{version}}
           git fetch origin "${branch}
-      - name: "git:branch"
+      - name: "git:branch_release"
         cmd: |
           release_branch="wip-release-{{version}}"
           git switch -c "${release_branch}"
           git push origin "${release_branch}"
   finalize:
     steps:
-      - name: git:tag
+      - name: git:fetch_release
+        cmd: |
+          set -e
+          wip_branch="wip-release-{{version}}
+          git fetch origin "${wip_branch}"
+          git checkout "${wip_branch}"
+
+      - name: git:tag_release
         cmd: |
           set -e
           branch="wip-release-{{version}}"
