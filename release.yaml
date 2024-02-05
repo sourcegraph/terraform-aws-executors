@@ -37,12 +37,15 @@ internal:
             rm -vf prev_tag
         - name: "git:branch"
           cmd: |
+            set -e
             branch="wip_{{version}}"
             git switch -c "${branch}"
             git commit -am 'release-minor: {{version}}' -m '{{config}}'
             git push origin ${branch}
         - name: "gh"
           cmd: |
+            # sometimes gh can fail because when it runs the branch is there _yet_, so we do this fetch to make sure it is
+            git fetch origin "wip_{{version}}"
             gh pr create -f -t "PRETEND RELEASE WIP: release_minor: build {{version}}" \
             --body "Test plan: automated release PR, CI will perform additional checks"
       major:
@@ -66,12 +69,15 @@ internal:
             rm -vf prev_tag
         - name: "git:branch"
           cmd: |
+            set -e
             branch="wip_{{version}}"
             git switch -c "${branch}"
             git commit -am 'release-minor: {{version}}' -m '{{config}}'
             git push origin ${branch}
         - name: "gh"
           cmd: |
+            # sometimes gh can fail because when it runs the branch is there _yet_, so we do this fetch to make sure it is
+            git fetch origin "wip_{{version}}"
             gh pr create -f -t "PRETEND RELEASE WIP: release_minor: build {{version}}" \
             --body "Test plan: automated release PR, CI will perform additional checks"
   finalize:
