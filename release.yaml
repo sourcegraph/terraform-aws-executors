@@ -85,7 +85,7 @@ internal:
       - name: "git:fetch"
         cmd: |
           set -e
-          wip_branch="wip_{{version}}
+          wip_branch="wip_{{version}}"
           git fetch origin "${wip_branch}"
           git checkout "${wip_branch}"
       - name: "git:finalize"
