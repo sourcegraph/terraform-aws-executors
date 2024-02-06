@@ -11,10 +11,8 @@ steps:
   - label: ":terraform:"
     command: .buildkite/terraform-validate.sh
     agents: { queue: standard }
-  - label: ":x: DISABLED :lint-roller:"
-    command: |
-      echo "--- :x: DISABLED temporarily :x:"
-      # .buildkite/check-latest-tag.sh
+  - label: ":lint-roller:"
+    command: .buildkite/check-latest-tag.sh
     agents: { queue: standard }
   - label: ":lock: security - checkov"
     command: .buildkite/ci-checkov.sh
