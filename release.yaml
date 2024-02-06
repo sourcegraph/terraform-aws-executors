@@ -1,0 +1,166 @@
+---
+meta:
+  productName: "terraform-aws-executors"
+  owners:
+    - "sourcegraph/release"
+  repository: "github.com/sourcegraph/terraform-aws-executors"
+inputs:
+  releaseId: server
+requirements:
+  - name: "comby exists"
+    cmd: "which comby"
+    fixInstructions: "install comby"
+  - name: "GitHub cli exists"
+    cmd: "which gh"
+    fixInstructions: "install GitHub cli"
+internal:
+  create:
+    steps:
+      minor:
+        - name: "git:prev_tag"
+          cmd: |
+            # get previous tag we need to replace
+            git describe --tags "$(git rev-list --tags --max-count=1)" | sed 's/v//' > prev_tag
+            # convert the tag to the image family format which uses hipens and is only for `major-minor`
+            echo "{{tag}}" | grep -o -E "[[:digit:]]+\.[[:digit:]]+" | sed 's/\./-/' > family_tag
+        - name: "files(README.md)"
+          cmd: comby -in-place "$(cat prev_tag)" '{{tag}}' README.md
+        - name: "files(tf)"
+          cmd: comby "\"$(cat prev_tag)\"" '"{{tag}}"' -i -f .tf -exclude providers.tf
+        - name: "family(name):docker-mirror"
+          cmd: comby '["sourcegraph-executors-docker-mirror-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-docker-mirror-$(cat family_tag)-*\"]" -i -f .tf
+        - name: "family(name):sourcegraph"
+          cmd: comby '["sourcegraph-executors-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-$(cat family_tag)-*\"]" -i -f .tf
+        - name: "cleanup"
+          cmd: |
+            rm -vf family_tag
+            rm -vf prev_tag
+        - name: "git:branch"
+          cmd: |
+            set -e
+            branch="wip_{{version}}"
+            git switch -c "${branch}"
+            git commit -am 'release-minor: {{version}}' -m '{{config}}'
+            git push origin ${branch}
+        - name: "gh"
+          cmd: |
+            # sometimes gh can fail because when it runs the branch is there _yet_, so we do this fetch to make sure it is
+            git fetch origin "wip_{{version}}"
+            gh pr create -f -t "PRETEND RELEASE WIP: release_minor: build {{version}}" \
+            --body "Test plan: automated release PR, CI will perform additional checks"
+      major:
+        - name: "git:prev_tag"
+          cmd: |
+            # get previous tag we need to replace
+            git describe --tags "$(git rev-list --tags --max-count=1)" | sed 's/v//' > prev_tag
+            # convert the tag to the image family format which uses hipens and is only for `major-minor`
+            echo "{{tag}}" | grep -o -E "[[:digit:]]+\.[[:digit:]]+" | sed 's/\./-/' > family_tag
+        - name: "files(README.md)"
+          cmd: comby -in-place "$(cat prev_tag)" '{{tag}}' README.md
+        - name: "files(tf)"
+          cmd: comby "\"$(cat prev_tag)\"" '"{{tag}}"' -i -f .tf -exclude providers.tf
+        - name: "docker:image"
+          cmd: comby '["sourcegraph-executors-docker-mirror-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-docker-mirror-$(cat family_tag)-*\"]" -i -f .tf
+        - name: "family:name"
+          cmd: comby '["sourcegraph-executors-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-$(cat family_tag)-*\"]" -i -f .tf
+        - name: "cleanup"
+          cmd: |
+            rm -vf family_tag
+            rm -vf prev_tag
+        - name: "git:branch"
+          cmd: |
+            set -e
+            branch="wip_{{version}}"
+            git switch -c "${branch}"
+            git commit -am 'release-minor: {{version}}' -m '{{config}}'
+            git push origin ${branch}
+        - name: "gh"
+          cmd: |
+            # sometimes gh can fail because when it runs the branch is there _yet_, so we do this fetch to make sure it is
+            git fetch origin "wip_{{version}}"
+            gh pr create -f -t "PRETEND RELEASE WIP: release_minor: build {{version}}" \
+            --body "Test plan: automated release PR, CI will perform additional checks"
+  finalize:
+    steps:
+      - name: "git:fetch"
+        cmd: |
+          set -e
+          wip_branch="wip_{{version}}"
+          git fetch origin "${wip_branch}"
+          git checkout "${wip_branch}"
+      - name: "git:finalize"
+        cmd: |
+          finalize_branch="wip-internal-release-{{version}}"
+          git switch -c "${branch}"
+          echo "pushing branch ${branch}"
+          git push origin "${branch}"
+          git checkout -
+
+test:
+  steps:
+    - name: "changes:README"
+      cmd: |
+        count=$(grep -c '{{tag}}' README.md)
+        expected=8
+        if [[ ${count} -ne ${expected} ]]; then
+          echo "expected ${expected} new version tags of \"{{tag}}\" in README.md, got ${count}"
+          exit 1
+        fi
+    - name: "changed:tf"
+      cmd: |
+        count=$(comby -match-only '"{{tag}}"' '' -f .tf | wc -l)
+        expected=6
+        if [[ ${count} -ne ${expected} ]]; then
+          echo "expected ${expected} .tf files to be updated with \"{{tag}}\" but got ${count}"
+          exit 1
+        fi
+    - name: changes:family(docker-mirror)""
+      cmd: |
+        echo "{{tag}}" | grep -o -E "[[:digit:]]+\.[[:digit:]]+" | sed 's/\./-/' > family_tag
+        trap 'rm -rf family_tag' EXIT
+        count=$(comby -match-only "[\"sourcegraph-executors-docker-mirror-$(cat family_tag)-*\"]" '' -f .tf | wc -l)
+        expected=1
+        if [[ ${count} -ne ${expected} ]]; then
+          echo "expected ${expected} file to have the correct image family set but got but got ${count} files"
+          exit 1
+        fi
+    - name: "changes:family(sourcegraph)"
+      cmd: |
+        echo "{{tag}}" | grep -o -E "[[:digit:]]+\.[[:digit:]]+" | sed 's/\./-/' > family_tag
+        trap 'rm -rf family_tag' EXIT
+        count=$(comby -match-only "[\"sourcegraph-executors-$(cat family_tag)-*\"]" '' -f .tf | wc -l)
+        expected=1
+        if [[ ${count} -ne ${expected} ]]; then
+          echo "expected ${expected} file to have the correct image family set but got but got ${count} files"
+          exit 1
+        fi
+
+promoteToPublic:
+  create:
+    steps:
+      - name: git:fetch_internal
+        cmd: |
+          set -e
+          branch=wip-internal-release-{{version}}
+          git fetch origin "${branch}
+      - name: "git:branch_release"
+        cmd: |
+          release_branch="wip-release-{{version}}"
+          git switch -c "${release_branch}"
+          git push origin "${release_branch}"
+  finalize:
+    steps:
+      - name: git:fetch_release
+        cmd: |
+          set -e
+          wip_branch="wip-release-{{version}}
+          git fetch origin "${wip_branch}"
+          git checkout "${wip_branch}"
+
+      - name: git:tag_release
+        cmd: |
+          set -e
+          branch="wip-release-{{version}}"
+          git checkout "${branch}"
+          git tag wip-{{version}}
+          git push origin ${branch} --tags
