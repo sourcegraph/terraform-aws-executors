@@ -90,10 +90,11 @@ internal:
           git checkout "${wip_branch}"
       - name: "git:finalize"
         cmd: |
+          set -e
           finalize_branch="wip-internal-release-{{version}}"
-          git switch -c "${branch}"
-          echo "pushing branch ${branch}"
-          git push origin "${branch}"
+          git switch -c "${finalize_branch}"
+          echo "pushing branch ${finalize_branch}"
+          git push origin "${finalize_branch}"
           git checkout -
 
 test:
