@@ -2,3 +2,4 @@ terraform 1.1.5
 shfmt 3.2.0
 shellcheck 0.7.1
 python system
+github-cli 2.46.0
