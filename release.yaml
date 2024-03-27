@@ -5,7 +5,7 @@ meta:
     - "sourcegraph/release"
   repository: "github.com/sourcegraph/terraform-aws-executors"
 inputs:
-  releaseId: server
+  - releaseId: server
 requirements:
   - name: "comby"
     cmd: "which comby"
@@ -144,18 +144,38 @@ test:
         fi
     - name: changes:family(docker-mirror)""
       cmd: |
+        set -eu
+
         echo "{{tag}}" | grep -o -E "[[:digit:]]+\.[[:digit:]]+" | sed 's/\./-/' > family_tag
-        trap 'rm -rf family_tag' EXIT
-        count=$(comby -match-only "[\"sourcegraph-executors-internal-docker-mirror-$(cat family_tag)-*\"]" '' -f .tf | wc -l)
+        trap "rm family_tag" EXIT
+
+        current_branch="${BUILDKITE_BRANCH:-$(git rev-parse --abbrev-ref HEAD)}"
+
+        family_regex="\"sourcegraph-executors-internal-docker-mirror-$(cat family_tag)-*\""
+        if [[ $current_branch =~ ^(promote|release)/.* ]]; then
+          family_regex="\"sourcegraph-executors-docker-mirror-$(cat family_tag)-*\""
+        fi
+
+        count=$(comby -match-only "${family_regex}" '' -f .tf | wc -l)
         expected=1
         if [[ ${count} -ne ${expected} ]]; then
-          echo "expected ${expected} file to have the correct image family set but got but got ${count} files"
+          echo "expected ${expected} .tf files to be updated with \"${family_regex}\" but got ${count}"
           exit 1
         fi
     - name: "changes:family(sourcegraph)"
       cmd: |
+        set -eu
+
         echo "{{tag}}" | grep -o -E "[[:digit:]]+\.[[:digit:]]+" | sed 's/\./-/' > family_tag
-        trap 'rm -rf family_tag' EXIT
+        trap "rm family_tag" EXIT
+
+        current_branch="${BUILDKITE_BRANCH:-$(git rev-parse --abbrev-ref HEAD)}"
+
+        family_regex="\"sourcegraph-executors-internal-$(cat family_tag)-*\""
+        if [[ $current_branch =~ ^(promote|release)/.* ]]; then
+          family_regex="\"sourcegraph-executors-$(cat family_tag)-*\""
+        fi
+
         count=$(comby -match-only "[\"sourcegraph-executors-internal-$(cat family_tag)-*\"]" '' -f .tf | wc -l)
         expected=1
         if [[ ${count} -ne ${expected} ]]; then
