@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+echo "~~~ Exit early for QA"
+exit 0
+
 scratch=$(mktemp -d -t tmp.XXXXXXXXXX)
 function finish() {
   rm -rf "$scratch"

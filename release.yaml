@@ -176,7 +176,7 @@ test:
           family_regex="\"sourcegraph-executors-$(cat family_tag)-*\""
         fi
 
-        count=$(comby -match-only "[\"sourcegraph-executors-internal-$(cat family_tag)-*\"]" '' -f .tf | wc -l)
+        count=$(comby -match-only "${family_regex}" '' -f .tf | wc -l)
         expected=1
         if [[ ${count} -ne ${expected} ]]; then
           echo "expected ${expected} file to have the correct image family set but got but got ${count} files"
