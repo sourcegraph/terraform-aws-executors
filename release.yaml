@@ -24,7 +24,7 @@ internal:
             # convert the tag to the image family format which uses hipens and is only for `major-minor`
             echo "{{tag}}" | grep -o -E "[[:digit:]]+\.[[:digit:]]+" | sed 's/\./-/' > family_tag
         - name: "files(README.md)"
-          cmd: comby -in-place "$(cat prev_tag)" '{{tag}}' README.md
+          cmd: comby "$(cat prev_tag)" '{{tag}}' -i -f .md
         - name: "files(tf)"
           cmd: comby "\"$(cat prev_tag)\"" '"{{tag}}"' -i -f .tf -exclude providers.tf
         - name: "family(name):docker-mirror"
