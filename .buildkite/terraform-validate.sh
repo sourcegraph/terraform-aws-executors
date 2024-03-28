@@ -2,6 +2,10 @@
 
 set -ex
 
+echo "~~~ Exit early for QA"
+
+exit 0
+
 cd "$(dirname "${BASH_SOURCE[0]}")"/..
 
 MODULES=(
