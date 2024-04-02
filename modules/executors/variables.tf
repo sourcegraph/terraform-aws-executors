@@ -32,7 +32,7 @@ variable "ami_version" {
   description = "Specify a Sourcegraph executor ami version to use rather than pulling latest"
 
   validation {
-    condition     = can(regex("^(internal|public-)?v?(\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z-.]+)?(\\+[0-9A-Za-z-.]+)?)?$", var.ami_version))
+    condition     = can(regex("^v?(\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z-.]+)?(\\+[0-9A-Za-z-.]+)?)?$", var.ami_version))
     error_message = "The Soucegraph ami version must be valid semver."
   }
 }
