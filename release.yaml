@@ -128,7 +128,7 @@ test:
   steps:
     - name: "changes:README"
       cmd: |
-        count=$(grep -c "5.3.666" --include "README.md" -r . | awk -F ":"  '{sum=sum + $2} END {print sum;}')
+        count=$(grep -c "{{tag}}" --include "README.md" -r . | awk -F ":"  '{sum=sum + $2} END {print sum;}')
         expected=16
         if [[ ${count} -ne ${expected} ]]; then
           echo "expected ${expected} new version tags of \"{{tag}}\" in README.md, got ${count}"
