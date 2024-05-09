@@ -9,11 +9,11 @@ steps:
     command: .buildkite/shellcheck.sh
     agents: { queue: standard }
   - label: ":terraform:"
-    if: build.branch !~ /^internal\/release-.*/
+    if: build.branch !~ /^internal\/release-.*/ || build.branch !~ /^promote\/release-.*/
     command: .buildkite/terraform-validate.sh
     agents: { queue: standard }
   - label: ":lint-roller:"
-    if: build.branch !~ /^internal\/release-.*/
+    if: build.branch !~ /^internal\/release-.*/ || build.branch !~ /^promote\/release-.*/
     command: .buildkite/check-latest-tag.sh
     agents: { queue: standard }
   - label: ":lock: security - checkov"
