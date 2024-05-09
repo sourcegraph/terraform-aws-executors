@@ -28,9 +28,9 @@ internal:
         - name: "files(tf)"
           cmd: comby "\"$(cat prev_tag)\"" '"{{tag}}"' -i -f .tf -exclude providers.tf
         - name: "family(name):docker-mirror"
-          cmd: comby '["sourcegraph-executors-docker-mirror-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-internal-docker-mirror-$(cat family_tag)-*\"]" -i -f .tf
+          cmd: comby '["sourcegraph-executors-docker-mirror-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-docker-mirror-$(cat family_tag)-*\"]" -i -f .tf
         - name: "family(name):sourcegraph"
-          cmd: comby '["sourcegraph-executors-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-internal-$(cat family_tag)-*\"]" -i -f .tf
+          cmd: comby '["sourcegraph-executors-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-$(cat family_tag)-*\"]" -i -f .tf
         - name: "cleanup"
           cmd: |
             # remove files we used in previous steps
@@ -67,15 +67,15 @@ internal:
             # get previous tag we need to replace
             git describe --tags "$(git rev-list --tags --max-count=1)" | sed 's/v//' > prev_tag
             # convert the tag to the image family format which uses hipens and is only for `major-minor`
-            echo "{{tag}}" | grep -o -E "[[:digit:]]+\.[[:digit:]]+" | sed 's/\./-/' > family_tag
+            echo "{{tag}}" | grep -o -E "[[:digit:]]+\.[[:digistt:]]+" | sed 's/\./-/' > family_tag
         - name: "files(README.md)"
           cmd: comby -in-place "$(cat prev_tag)" '{{tag}}' README.md
         - name: "files(tf)"
           cmd: comby "\"$(cat prev_tag)\"" '"{{tag}}"' -i -f .tf -exclude providers.tf
         - name: "family(name):docker-mirror"
-          cmd: comby '["sourcegraph-executors-docker-mirror-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-internal-docker-mirror-$(cat family_tag)-*\"]" -i -f .tf
+          cmd: comby '["sourcegraph-executors-docker-mirror-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-docker-mirror-$(cat family_tag)-*\"]" -i -f .tf
         - name: "family(name):sourcegraph"
-          cmd: comby '["sourcegraph-executors-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-internal-$(cat family_tag)-*\"]" -i -f .tf
+          cmd: comby '["sourcegraph-executors-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-$(cat family_tag)-*\"]" -i -f .tf
         - name: "cleanup"
           cmd: |
             # remove files we used in previous steps
@@ -124,6 +124,27 @@ internal:
           Internal release is ready for promotion under the branch [\`$branch\`](https://github.com/sourcegraph/terraform-aws-executors/tree/$branch).
           EOF
 
+      - name: 'Register on release registry'
+        cmd: |
+          echo "Registering internal terraform-aws-executors {{version}} release on release registry"
+          body=$(wget --content-on-error -O- --header="Content-Type: application/json" --header="Authorization: ${RELEASE_REGISTRY_TOKEN}" --post-data '{
+              "name": "terraform-aws-executors",
+              "version": "{{version}}",
+              "git_sha": "'${COMMIT_SHA}'"
+            }' "https://releaseregistry.sourcegraph.com/v1/releases")
+          exit_code=$?
+
+          if [ $exit_code != 0 ]; then
+            echo "❌ Failed to create release in release registry, got:"
+            echo "--- raw body ---"
+            echo $body
+            echo "--- raw body ---"
+            exit $exit_code
+          else
+            echo "Release created, see:"
+            echo $body
+          fi
+
 test:
   steps:
     - name: "changes:README"
@@ -151,7 +172,7 @@ test:
 
         current_branch="${BUILDKITE_BRANCH:-$(git rev-parse --abbrev-ref HEAD)}"
 
-        family_regex="\"sourcegraph-executors-internal-docker-mirror-$(cat family_tag)-*\""
+        family_regex="\"sourcegraph-executors-docker-mirror-$(cat family_tag)-*\""
         if [[ $current_branch =~ ^(promote|release)/.* ]]; then
           family_regex="\"sourcegraph-executors-docker-mirror-$(cat family_tag)-*\""
         fi
@@ -171,7 +192,7 @@ test:
 
         current_branch="${BUILDKITE_BRANCH:-$(git rev-parse --abbrev-ref HEAD)}"
 
-        family_regex="\"sourcegraph-executors-internal-$(cat family_tag)-*\""
+        family_regex="\"sourcegraph-executors-$(cat family_tag)-*\""
         if [[ $current_branch =~ ^(promote|release)/.* ]]; then
           family_regex="\"sourcegraph-executors-$(cat family_tag)-*\""
         fi
@@ -195,9 +216,9 @@ promoteToPublic:
           git switch "${branch}"
       # Since we're promoting to public we need to remove the "internal" from the family
       - name: "family(name):docker-mirror"
-        cmd: comby '["sourcegraph-executors-internal-docker-mirror-:[family_tag_hole~\d+-\d+]-*"]' "[\"sourcegraph-executors-docker-mirror-:[family_tag_hole]-*\"]" -i -f .tf
+        cmd: comby '["sourcegraph-executors-docker-mirror-:[family_tag_hole~\d+-\d+]-*"]' "[\"sourcegraph-executors-docker-mirror-:[family_tag_hole]-*\"]" -i -f .tf
       - name: "family(name):sourcegraph"
-        cmd: comby '["sourcegraph-executors-internal-:[family_tag_hole~\d+-\d+]-*"]' "[\"sourcegraph-executors-:[family_tag_hole]-*\"]" -i -f .tf
+        cmd: comby '["sourcegraph-executors-:[family_tag_hole~\d+-\d+]-*"]' "[\"sourcegraph-executors-:[family_tag_hole]-*\"]" -i -f .tf
       - name: "git:branch"
         cmd: |
           set -eu
@@ -228,38 +249,54 @@ promoteToPublic:
           echo "🚢 Please check the associated CI build to ensure the process completed".
   finalize:
     steps:
-      - name: git:tag
+      - name: 'Promote on release registry'
         cmd: |
-          set -eu
+          echo "Promoting terraform-aws-executors {{version}} release on release registry"
+          body=$(wget --content-on-error -O- --header="Content-Type: application/json" --header="Authorization: ${RELEASE_REGISTRY_TOKEN}" --post-data '' "https://releaseregistry.sourcegraph.com/v1/releases/terraform-aws-executors/{{version}}/promote")
+          exit_code=$?
 
-          # Branches
-          internal_branch="internal/release-{{version}}"
-          promote_branch="promote/release-{{version}}"
-          release_branch="release-{{version}}"
+          if [ $exit_code != 0 ]; then
+            echo "❌ Failed to promote release on release registry, got:"
+            echo "--- raw body ---"
+            echo $body
+            echo "--- raw body ---"
+            exit $exit_code
+          else
+            echo "Release promoted, see:"
+            echo $body
+          fi
+      # - name: git:tag
+      #   cmd: |
+      #     set -eu
 
-          # Create the final branch holding the tagged commit
-          git checkout "${promote_branch}"
-          git switch -c "${release_branch}"
-          git tag {{version}}
-          git push origin ${release_branch} --tags
+      #     # Branches
+      #     internal_branch="internal/release-{{version}}"
+      #     promote_branch="promote/release-{{version}}"
+      #     release_branch="release-{{version}}"
 
-          # Web URL to the tag
-          tag_url="https://github.com/sourcegraph/terraform-aws-executors/tree/{{version}}"
+      #     # Create the final branch holding the tagged commit
+      #     git checkout "${promote_branch}"
+      #     git switch -c "${release_branch}"
+      #     git tag {{version}}
+      #     git push origin ${release_branch} --tags
 
-          # Annotate PRs
-          cat << EOF | gh pr comment "$internal_branch" --body-file -
-          - :green_circle: Release has been promoted, see tag: $tag_url.
-          - :no_entry: Do not under any circumstance delete the branch holding the tagged commit (i.e. \`$release_branch\`).
-          - :arrow_right: You can safely close the PR and delete its a associated branch.
-          EOF
+      #     # Web URL to the tag
+      #     tag_url="https://github.com/sourcegraph/terraform-aws-executors/tree/{{version}}"
 
-          cat << EOF | gh pr comment "$promote_branch" --body-file -
-          - :green_circle: Release has been promoted, see tag: $tag_url.
-          - :no_entry: Do not under any circumstance delete the branch holding the tagged commit (i.e. \`$release_branch\`).
-          - :arrow_right: You can safely close that PR and delete its a associated branch.
-          EOF
+      #     # Annotate PRs
+      #     cat << EOF | gh pr comment "$internal_branch" --body-file -
+      #     - :green_circle: Release has been promoted, see tag: $tag_url.
+      #     - :no_entry: Do not under any circumstance delete the branch holding the tagged commit (i.e. \`$release_branch\`).
+      #     - :arrow_right: You can safely close the PR and delete its a associated branch.
+      #     EOF
 
-          # Annotate build
-          cat << EOF | buildkite-agent annotate --style info
-          Promoted release is **publicly available** through a git tag at [\`{{version}}\`](https://github.com/sourcegraph/terraform-aws-executors/tree/{{version}}).
-          EOF
+      #     cat << EOF | gh pr comment "$promote_branch" --body-file -
+      #     - :green_circle: Release has been promoted, see tag: $tag_url.
+      #     - :no_entry: Do not under any circumstance delete the branch holding the tagged commit (i.e. \`$release_branch\`).
+      #     - :arrow_right: You can safely close that PR and delete its a associated branch.
+      #     EOF
+
+      #     # Annotate build
+      #     cat << EOF | buildkite-agent annotate --style info
+      #     Promoted release is **publicly available** through a git tag at [\`{{version}}\`](https://github.com/sourcegraph/terraform-aws-executors/tree/{{version}}).
+      #     EOF
