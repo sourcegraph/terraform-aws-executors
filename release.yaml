@@ -67,7 +67,7 @@ internal:
             # get previous tag we need to replace
             git describe --tags "$(git rev-list --tags --max-count=1)" | sed 's/v//' > prev_tag
             # convert the tag to the image family format which uses hipens and is only for `major-minor`
-            echo "{{tag}}" | grep -o -E "[[:digit:]]+\.[[:digistt:]]+" | sed 's/\./-/' > family_tag
+            echo "{{tag}}" | grep -o -E "[[:digit:]]+\.[[:digit:]]+" | sed 's/\./-/' > family_tag
         - name: "files(README.md)"
           cmd: comby -in-place "$(cat prev_tag)" '{{tag}}' README.md
         - name: "files(tf)"
