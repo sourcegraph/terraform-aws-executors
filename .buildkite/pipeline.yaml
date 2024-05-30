@@ -1,20 +1,67 @@
 steps:
   - label: ":lipstick:"
     command: .buildkite/shfmt.sh
-    agents: { queue: standard }    
+    agents: { queue: standard }
   - label: ":lipstick:"
     command: .buildkite/terraform-fmt.sh
-    agents: { queue: standard }    
+    agents: { queue: standard }
   - label: ":lint-roller:"
     command: .buildkite/shellcheck.sh
-    agents: { queue: standard }    
+    agents: { queue: standard }
   - label: ":terraform:"
+    if: build.branch !~ /^internal\/release-.*/ && build.branch !~ /^promote\/release-.*/
     command: .buildkite/terraform-validate.sh
-    agents: { queue: standard }    
+    agents: { queue: standard }
   - label: ":lint-roller:"
+    if: build.branch !~ /^internal\/release-.*/ && build.branch !~ /^promote\/release-.*/
     command: .buildkite/check-latest-tag.sh
-    agents: { queue: standard }    
+    agents: { queue: standard }
   - label: ":lock: security - checkov"
-    command: .buildkite/ci-checkov.sh    
-    agents: { queue: standard }    
+    command: .buildkite/ci-checkov.sh
+    agents: { queue: standard }
     soft_fail: true
+
+  - label: "(internal) Release: test"
+    if: build.branch =~ /^internal\/release-.*/
+    plugins:
+      - ssh://git@github.com/sourcegraph/sg-buildkite-plugin.git#main: ~
+    command: |
+      wget https://github.com/comby-tools/comby/releases/download/1.8.1/comby-1.8.1-x86_64-linux
+      chmod +x ./comby-1.8.1-x86_64-linux
+      mv comby-1.8.1-x86_64-linux /usr/local/bin/comby
+
+      sg release run test --workdir=. --config-from-commit
+
+  - label: "(promote) Release: test"
+    if: build.branch =~ /^promote\/release-.*/
+    plugins:
+      - ssh://git@github.com/sourcegraph/sg-buildkite-plugin.git#main: ~
+    command: |
+      wget https://github.com/comby-tools/comby/releases/download/1.8.1/comby-1.8.1-x86_64-linux
+      chmod +x ./comby-1.8.1-x86_64-linux
+      mv comby-1.8.1-x86_64-linux /usr/local/bin/comby
+
+      sg release run test --workdir=. --config-from-commit
+
+  - wait
+
+  - label: "(internal) Release: finalize"
+    if: build.branch =~ /^internal\/release-.*/
+    plugins:
+      - ssh://git@github.com/sourcegraph/sg-buildkite-plugin.git#main: ~
+    command: |
+      wget https://github.com/comby-tools/comby/releases/download/1.8.1/comby-1.8.1-x86_64-linux
+      chmod +x ./comby-1.8.1-x86_64-linux
+      mv comby-1.8.1-x86_64-linux /usr/local/bin/comby
+
+      sg release run internal finalize --workdir=. --config-from-commit
+  - label: "(promote) Release: finalize"
+    if: build.branch =~ /^promote\/release-.*/
+    plugins:
+      - ssh://git@github.com/sourcegraph/sg-buildkite-plugin.git#main: ~
+    command: |
+      wget https://github.com/comby-tools/comby/releases/download/1.8.1/comby-1.8.1-x86_64-linux
+      chmod +x ./comby-1.8.1-x86_64-linux
+      mv comby-1.8.1-x86_64-linux /usr/local/bin/comby
+
+      sg release run promote-to-public finalize --workdir=. --config-from-commit
