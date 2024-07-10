@@ -20,7 +20,8 @@ internal:
         - name: "git:prev_tag"
           cmd: |
             # get previous tag we need to replace
-            git describe --tags "$(git rev-list --tags --max-count=1)" | sed 's/v//' > prev_tag
+            # git describe --tags "$(git rev-list --tags --max-count=1)" | sed 's/v//' > prev_tag
+            echo 5.3.1 > prev_tag
             # convert the tag to the image family format which uses hipens and is only for `major-minor`
             echo "{{tag}}" | grep -o -E "[[:digit:]]+\.[[:digit:]]+" | sed 's/\./-/' > family_tag
         - name: "files(README.md)"
