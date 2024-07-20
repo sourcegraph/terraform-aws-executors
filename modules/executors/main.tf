@@ -260,6 +260,7 @@ resource "aws_launch_template" "executor" {
       "EXECUTOR_MAX_ACTIVE_TIME"            = var.max_active_time
       "EXECUTOR_USE_FIRECRACKER"            = var.use_firecracker
       "EXECUTOR_DOCKER_AUTH_CONFIG"         = var.docker_auth_config
+      "PRIVATE_CA_CERTIFICATE"              = var.private_ca_cert_path != "" ? file(var.private_ca_cert_path) : ""
     }
   }))
 
