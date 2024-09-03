@@ -244,3 +244,9 @@ variable "ami_version" {
     error_message = "The Soucegraph ami version must be valid semver."
   }
 }
+
+variable "private_ca_cert_path" {
+  type        = string
+  default     = ""
+  description = "Path to the private CA certificate file"
+}

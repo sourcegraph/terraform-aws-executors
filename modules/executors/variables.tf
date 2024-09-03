@@ -225,3 +225,9 @@ variable "permissions_boundary_arn" {
   default     = ""
   description = "If not provided, there will be no permissions boundary on IAM roles and users created. The ARN of a policy to use for permissions boundaries with IAM roles and users."
 }
+
+variable "private_ca_cert_path" {
+  type        = string
+  default     = ""
+  description = "Path to the private CA certificate file"
+}
