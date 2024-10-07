@@ -45,7 +45,7 @@ fi
 
 echo "Retrieving latest tag..."
 git fetch
-latest_tag="5.6.0"
+latest_tag=$(git describe --tags --abbrev=0 | tr -d '\n' | cut -c2-)
 
 branch="release/prepare-$new_tag"
 echo "Creating branch $branch..."
