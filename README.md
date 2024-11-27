@@ -13,6 +13,7 @@ This repository provides four submodules:
 
 The [multiple-executors example](https://github.com/sourcegraph/terraform-aws-executors/blob/v5.10.0/examples/multiple-executors) uses the submodule directly to provision multiple executor resource groups performing different types of work. Follow this example if you are:
 
+
 1. Provisioning executors for use with multiple features (e.g., both [auto-indexing](https://sourcegraph.com/docs/code_intelligence/explanations/auto_indexing) and [server-side batch changes](https://sourcegraph.com/docs/batch_changes/explanations/server_side)), or
 2. Provisioning resources for multiple Sourcegraph instances (e.g., test, prod)
 
