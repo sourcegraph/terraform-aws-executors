@@ -11,9 +11,9 @@ set -e -o pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"/..
 
 get_latest() {
-  git fetch --tags
+  git fetch --all --tags
 
-  git describe --tags --abbrev=0 |
+  git tag --sort=-v:refname | head -n 1 |
     # drop `v` prefix
     cut -c2- |
 
