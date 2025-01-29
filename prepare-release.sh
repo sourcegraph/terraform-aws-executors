@@ -45,11 +45,11 @@ fi
 
 echo "Retrieving latest tag..."
 git fetch
-latest_tag=5.11.1
+latest_tag=$(git describe --tags --abbrev=0 | tr -d '\n' | cut -c2-)
 
 branch="release/prepare-$new_tag"
 echo "Creating branch $branch..."
-#git checkout -b "$branch"
+git checkout -b "$branch"
 
 os=$(uname -s)
 case $os in
@@ -76,10 +76,10 @@ case $os in
 esac
 
 echo "Committing changes to $branch..."
-#git commit -a -m "Update files for $new_tag release"
+git commit -a -m "Update files for $new_tag release"
 
 echo "Pushing changes..."
-#git push -u origin "$branch" --force
+git push -u origin "$branch" --force
 
 echo ""
 echo "Go to https://github.com/sourcegraph/terraform-aws-executors and open a Pull Request for this branch"
