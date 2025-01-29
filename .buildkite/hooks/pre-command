@@ -3,5 +3,5 @@
 set -eu
 
 echo "install asdf plugins"
-asdf install
+mise install
 echo "done installing"
