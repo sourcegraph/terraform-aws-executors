@@ -48,7 +48,7 @@ data "aws_ami" "latest_ami" {
 
   filter {
     name   = "name"
-    values = ["sourcegraph-executors-docker-mirror-6-0-*"]
+    values = ["sourcegraph-executors-docker-mirror-6-1-*"]
   }
 
   filter {
