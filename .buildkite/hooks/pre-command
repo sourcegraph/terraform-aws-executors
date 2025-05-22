@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
+# Skip the rest if this is pipeline upload or empty
+if [[ "${BUILDKITE_COMMAND:-}" =~ "buildkite-agent pipeline upload".* ]]; then
+  exit 0
+elif [[ "${BUILDKITE_COMMAND:-}" = "" ]]; then
+  exit 0
+fi
 
-set -eu
-
-echo "install asdf plugins"
-asdf install
-echo "done installing"
+if [ ! -f .use_mise ]; then
+  source ./asdf-pre-command
+fi
