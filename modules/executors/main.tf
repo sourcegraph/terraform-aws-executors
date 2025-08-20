@@ -153,7 +153,7 @@ data "aws_ami" "latest_ami" {
 
   filter {
     name   = "name"
-    values = ["sourcegraph-executors-6-5-*"]
+    values = ["sourcegraph-executors-6-6-*"]
   }
 
   filter {
