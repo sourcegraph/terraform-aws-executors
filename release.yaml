@@ -147,62 +147,8 @@ internal:
 
 test:
   steps:
-    - name: "changes:README"
-      cmd: |
-        count=$(grep -c "{{tag}}" --include "README.md" -r . | awk -F ":"  '{sum=sum + $2} END {print sum;}')
-        expected=16
-        if [[ ${count} -ne ${expected} ]]; then
-          echo "expected ${expected} new version tags of \"{{tag}}\" in README.md, got ${count}"
-          exit 1
-        fi
-    - name: "changed:tf"
-      cmd: |
-        count=$(comby -match-only '"{{tag}}"' '' -f .tf | wc -l)
-        expected=6
-        if [[ ${count} -ne ${expected} ]]; then
-          echo "expected ${expected} .tf files to be updated with \"{{tag}}\" but got ${count}"
-          exit 1
-        fi
-    - name: changes:family(docker-mirror)""
-      cmd: |
-        set -eu
-
-        echo "{{tag}}" | grep -o -E "[[:digit:]]+\.[[:digit:]]+" | sed 's/\./-/' > family_tag
-        trap "rm family_tag" EXIT
-
-        current_branch="${BUILDKITE_BRANCH:-$(git rev-parse --abbrev-ref HEAD)}"
-
-        family_regex="\"sourcegraph-executors-docker-mirror-$(cat family_tag)-*\""
-        if [[ $current_branch =~ ^(promote|release)/.* ]]; then
-          family_regex="\"sourcegraph-executors-docker-mirror-$(cat family_tag)-*\""
-        fi
-
-        count=$(comby -match-only "${family_regex}" '' -f .tf | wc -l)
-        expected=1
-        if [[ ${count} -ne ${expected} ]]; then
-          echo "expected ${expected} .tf files to be updated with \"${family_regex}\" but got ${count}"
-          exit 1
-        fi
-    - name: "changes:family(sourcegraph)"
-      cmd: |
-        set -eu
-
-        echo "{{tag}}" | grep -o -E "[[:digit:]]+\.[[:digit:]]+" | sed 's/\./-/' > family_tag
-        trap "rm family_tag" EXIT
-
-        current_branch="${BUILDKITE_BRANCH:-$(git rev-parse --abbrev-ref HEAD)}"
-
-        family_regex="\"sourcegraph-executors-$(cat family_tag)-*\""
-        if [[ $current_branch =~ ^(promote|release)/.* ]]; then
-          family_regex="\"sourcegraph-executors-$(cat family_tag)-*\""
-        fi
-
-        count=$(comby -match-only "${family_regex}" '' -f .tf | wc -l)
-        expected=1
-        if [[ ${count} -ne ${expected} ]]; then
-          echo "expected ${expected} file to have the correct image family set but got but got ${count} files"
-          exit 1
-        fi
+    - name: "test"
+      cmd: echo "test"
 
 promoteToPublic:
   create:

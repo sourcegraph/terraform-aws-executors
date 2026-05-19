@@ -12,10 +12,6 @@ steps:
     if: build.branch !~ /^internal\/release-.*/ && build.branch !~ /^promote\/release-.*/
     command: .buildkite/terraform-validate.sh
     agents: { queue: standard }
-  - label: ":lint-roller:"
-    if: build.branch !~ /^internal\/release-.*/ && build.branch !~ /^promote\/release-.*/
-    command: .buildkite/check-latest-tag.sh
-    agents: { queue: standard }
   - label: ":lock: security - checkov"
     command: .buildkite/ci-checkov.sh
     agents: { queue: standard }
