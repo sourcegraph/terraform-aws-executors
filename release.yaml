@@ -147,8 +147,8 @@ internal:
 
 test:
   steps:
-    - name: "test"
-      cmd: echo "test"
+    - name: "noop"
+      cmd: "true"
 
 promoteToPublic:
   create:
