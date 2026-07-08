@@ -107,6 +107,12 @@ resource "aws_instance" "default" {
 
   monitoring = true
 
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 1
+  }
+
   # We attach the static network device to the mirror instance.
   network_interface {
     device_index         = 0
