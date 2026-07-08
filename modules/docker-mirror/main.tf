@@ -142,7 +142,7 @@ resource "random_id" "eip" {
 resource "aws_eip" "static" {
   count = var.assign_public_ip ? 1 : 0
 
-  vpc                       = true
+  domain                    = "vpc"
   associate_with_private_ip = var.static_ip
   network_interface         = aws_network_interface.static.id
 

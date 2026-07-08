@@ -163,7 +163,7 @@ resource "aws_eip" "nat" {
   # Only create this resource when NAT is enabled.
   count = var.nat ? 1 : 0
 
-  vpc        = true
+  domain     = "vpc"
   depends_on = [aws_internet_gateway.default]
 
   tags = {

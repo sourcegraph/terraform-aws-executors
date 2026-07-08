@@ -224,6 +224,12 @@ resource "aws_launch_template" "executor" {
     security_groups = [var.metrics_access_security_group_id != "" ? var.metrics_access_security_group_id : aws_security_group.metrics_access[0].id]
   }
 
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 1
+  }
+
   monitoring {
     enabled = true
   }
