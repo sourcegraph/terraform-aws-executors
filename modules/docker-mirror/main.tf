@@ -2,7 +2,11 @@ locals {
   resource_prefix = (var.resource_prefix == "" || substr(var.resource_prefix, -1, -2) == "-") ? var.resource_prefix : "${var.resource_prefix}-"
 
   cloudwatch_log_group = {
-    name = var.randomize_resource_names ? "${local.resource_prefix}sourcegraph-executors-docker-registry-mirror-${random_id.cloudwatch_log_group[0].hex}" : null
+    # The docker-mirror AMI's CloudWatch agent ships syslog to this group. When
+    # randomizing, use a unique name so multiple deployments in the same
+    # account/region don't collide; the boot-time startup script reconfigures
+    # the agent to match. Otherwise keep the legacy fixed name the AMI defaults to.
+    name = var.randomize_resource_names ? "${local.resource_prefix}sourcegraph-executors-docker-registry-mirror-${random_id.cloudwatch_log_group[0].hex}" : "executors_docker_mirror"
   }
   instance = {
     name = var.randomize_resource_names ? "${local.resource_prefix}sourcegraph-executors-docker-registry-mirror-${random_id.instance[0].hex}" : "sourcegraph-executors-docker-registry-mirror"
@@ -28,8 +32,10 @@ resource "random_id" "cloudwatch_log_group" {
 # Create a log group in CloudWatch. This is where the docker mirror will ingest
 # its logs to.
 resource "aws_cloudwatch_log_group" "syslogs" {
-  # TODO: This is hardcoded in the executor docker mirror image.
-  name              = "executors_docker_mirror"
+  # The docker-mirror AMI's CloudWatch agent defaults to a group literally named
+  # "executors_docker_mirror". The startup script reconfigures the agent to use
+  # this name at boot, so randomized deployments get a unique log group.
+  name              = local.cloudwatch_log_group.name
   retention_in_days = 7
 
   tags = {
@@ -121,7 +127,9 @@ resource "aws_instance" "default" {
 
   iam_instance_profile = aws_iam_instance_profile.instance.name
 
-  user_data_base64 = base64encode(file("${path.module}/startup-script.sh"))
+  user_data_base64 = base64encode(templatefile("${path.module}/startup-script.sh.tpl", {
+    cloudwatch_log_group_name = local.cloudwatch_log_group.name
+  }))
 }
 
 # Reserve a fixed disk to retain docker mirror data across rollouts.

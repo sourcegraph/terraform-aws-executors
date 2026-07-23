@@ -11,7 +11,12 @@ locals {
     name = var.randomize_resource_names ? "${local.prefix}executors-${random_id.security_group[0].hex}" : "${var.resource_prefix}SourcegraphExecutorsMetricsAccess"
   }
   cloudwatch_log_group = {
-    name = var.randomize_resource_names ? "${local.prefix}executors-${random_id.cloudwatch_log_group[0].hex}" : null
+    # The executor AMI's CloudWatch agent ships syslog to this group. When
+    # randomizing, use a unique name so multiple executor fleets in the same
+    # account/region don't collide on one shared log group; the boot-time
+    # startup script reconfigures the agent to match (see startup-script.sh.tpl).
+    # Otherwise keep the legacy fixed name the AMI defaults to.
+    name = var.randomize_resource_names ? "${local.prefix}executors-${random_id.cloudwatch_log_group[0].hex}" : "executors"
   }
   iam_instance_profile = {
     name = var.randomize_resource_names ? "${local.prefix}executors-${random_id.iam_instance_profile[0].hex}" : "${local.prefix}_executors"
@@ -137,8 +142,10 @@ resource "random_id" "cloudwatch_log_group" {
 }
 
 resource "aws_cloudwatch_log_group" "syslogs" {
-  # TODO: This is hardcoded in the executor image.
-  name              = "executors"
+  # The executor AMI's CloudWatch agent defaults to a group literally named
+  # "executors". The startup script reconfigures the agent to use this name at
+  # boot, so randomized deployments get a unique, non-colliding log group.
+  name              = local.cloudwatch_log_group.name
   retention_in_days = 7
 
   tags = {
@@ -267,6 +274,7 @@ resource "aws_launch_template" "executor" {
       "EXECUTOR_USE_FIRECRACKER"            = var.use_firecracker
       "EXECUTOR_DOCKER_AUTH_CONFIG"         = var.docker_auth_config
       "PRIVATE_CA_CERTIFICATE"              = var.private_ca_cert_path != "" ? file(var.private_ca_cert_path) : ""
+      "CLOUDWATCH_LOG_GROUP_NAME"           = local.cloudwatch_log_group.name
     }
   }))
 

@@ -6,6 +6,7 @@ The following variables must be supplied:
 
 - `sourcegraph_external_url`, `sourcegraph_executor_proxy_password`, `queue_name`, `metrics_environment_label`, and `instance_tag`: Analogous to the `executor_*` variables in the `single-executor` example.
 - `resource_prefix`: A prefix unique to each set of compute resources. This prevents collisions between two uses of the `executors` module. We recommend this value be constructed the same way `instance_tag` is constructed.
+- `randomize_resource_names`: Must be `true` when running more than one `executors` (or `docker-mirror`) module in the same account and region. The executor AMI's CloudWatch agent ships host logs to a log group named `executors` by default; randomizing gives each fleet a unique log group (and reconfigures the on-host agent to match at boot) so the two deployments don't collide on that shared log group.
 - `docker_registry_mirror`: This variable is given the value `"http://${module.docker-mirror.ip_address}:5000"`, which converts the raw external IP address to an address resolvable by the executor instances.
 
 If your deployment environment already has a Docker registry that can be used, only the `executor` submodule must be used (and references to the `networking` and `docker-mirror` modules can be dropped). The Docker registry mirror address can be supplied along with its containing VPC and subnet as pre-existing identifier literals.
