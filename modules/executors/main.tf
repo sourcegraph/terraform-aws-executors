@@ -11,12 +11,15 @@ locals {
     name = var.randomize_resource_names ? "${local.prefix}executors-${random_id.security_group[0].hex}" : "${var.resource_prefix}SourcegraphExecutorsMetricsAccess"
   }
   cloudwatch_log_group = {
-    # The executor AMI's CloudWatch agent ships syslog to this group. When
-    # randomizing, use a unique name so multiple executor fleets in the same
-    # account/region don't collide on one shared log group; the boot-time
-    # startup script reconfigures the agent to match (see startup-script.sh.tpl).
-    # Otherwise keep the legacy fixed name the AMI defaults to.
-    name = var.randomize_resource_names ? "${local.prefix}executors-${random_id.cloudwatch_log_group[0].hex}" : "executors"
+    # The executor AMI's CloudWatch agent ships syslog to this group; the
+    # boot-time startup script reconfigures the agent to this name (see
+    # startup-script.sh.tpl). Multiple fleets in one account/region must not
+    # share one group, so the name carries the same prefix/random suffix as the
+    # other executor resources (IAM role, launch template, ASG, ...):
+    #   - randomize_resource_names: unique per fleet via the random suffix
+    #   - resource_prefix set:      unique per fleet via the prefix
+    #   - neither:                  the legacy fixed "executors" name (single fleet)
+    name = var.randomize_resource_names ? "${local.prefix}executors-${random_id.cloudwatch_log_group[0].hex}" : (var.resource_prefix != "" ? "${local.prefix}executors" : "executors")
   }
   iam_instance_profile = {
     name = var.randomize_resource_names ? "${local.prefix}executors-${random_id.iam_instance_profile[0].hex}" : "${local.prefix}_executors"
