@@ -17,25 +17,51 @@ internal:
   create:
     steps:
       minor:
-        - name: "git:prev_tag"
+        - name: "release:setup"
           cmd: |
-            # get previous tag we need to replace
-            git describe --tags "$(git rev-list --tags --max-count=1)" | sed 's/v//' > prev_tag
-            # convert the tag to the image family format which uses hipens and is only for `major-minor`
+            # Convert the tag to the image family format, which uses hyphens and only major-minor.
             echo "{{tag}}" | grep -o -E "[[:digit:]]+\.[[:digit:]]+" | sed 's/\./-/' > family_tag
         - name: "files(README.md)"
-          cmd: comby "$(cat prev_tag)" '{{tag}}' -i -f .md
+          cmd: |
+            comby 'registry.terraform.io/modules/sourcegraph/executors/aws/:[version~\d+\.\d+\.\d+]' 'registry.terraform.io/modules/sourcegraph/executors/aws/{{tag}}' -i -f .md
+            comby 'github.com/sourcegraph/terraform-aws-executors/blob/v:[version~\d+\.\d+\.\d+]' 'github.com/sourcegraph/terraform-aws-executors/blob/v{{tag}}' -i -f .md
         - name: "files(tf)"
-          cmd: comby "\"$(cat prev_tag)\"" '"{{tag}}"' -i -f .tf -exclude providers.tf
+          cmd: |
+            comby 'version = ":[version~\d+\.\d+\.\d+]" # LATEST' 'version = "{{tag}}" # LATEST' -i -f .tf
         - name: "family(name):docker-mirror"
           cmd: comby '["sourcegraph-executors-docker-mirror-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-docker-mirror-$(cat family_tag)-*\"]" -i -f .tf
         - name: "family(name):sourcegraph"
           cmd: comby '["sourcegraph-executors-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-$(cat family_tag)-*\"]" -i -f .tf
+        - name: "release:verify"
+          cmd: |
+            set -eu
+            family_tag=$(cat family_tag)
+
+            grep -Fq "sourcegraph-executors-docker-mirror-${family_tag}-*" modules/docker-mirror/main.tf
+            grep -Fq "sourcegraph-executors-${family_tag}-*" modules/executors/main.tf
+
+            if grep -REh --include='*.md' 'registry\.terraform\.io/modules/sourcegraph/executors/aws/[0-9]+\.[0-9]+\.[0-9]+|github\.com/sourcegraph/terraform-aws-executors/blob/v[0-9]+\.[0-9]+\.[0-9]+' . | grep -Fv '{{tag}}'; then
+              echo "Found a stale Terraform module reference after release updates"
+              exit 1
+            fi
+
+            if grep -REh --include='*.tf' 'version[[:space:]]*=[[:space:]]*"[0-9]+\.[0-9]+\.[0-9]+"[[:space:]]*# LATEST' . | grep -Fv '"{{tag}}"'; then
+              echo "Found a stale Terraform module version after release updates"
+              exit 1
+            fi
+
+            git diff --quiet -- modules/docker-mirror/main.tf && {
+              echo "Docker mirror image family was not updated"
+              exit 1
+            }
+            git diff --quiet -- modules/executors/main.tf && {
+              echo "Executor image family was not updated"
+              exit 1
+            }
         - name: "cleanup"
           cmd: |
             # remove files we used in previous steps
             rm -vf family_tag
-            rm -vf prev_tag
         - name: "git:branch"
           cmd: |
             set -eu
@@ -62,25 +88,51 @@ internal:
               --body "Test plan: automated release PR, CI will perform additional checks"
             echo "🚢 Please check the associated CI build to ensure the process completed".
       major:
-        - name: "git:prev_tag"
+        - name: "release:setup"
           cmd: |
-            # get previous tag we need to replace
-            git describe --tags "$(git rev-list --tags --max-count=1)" | sed 's/v//' > prev_tag
-            # convert the tag to the image family format which uses hipens and is only for `major-minor`
+            # Convert the tag to the image family format, which uses hyphens and only major-minor.
             echo "{{tag}}" | grep -o -E "[[:digit:]]+\.[[:digit:]]+" | sed 's/\./-/' > family_tag
         - name: "files(README.md)"
-          cmd: comby -in-place "$(cat prev_tag)" '{{tag}}' README.md
+          cmd: |
+            comby 'registry.terraform.io/modules/sourcegraph/executors/aws/:[version~\d+\.\d+\.\d+]' 'registry.terraform.io/modules/sourcegraph/executors/aws/{{tag}}' -i -f .md
+            comby 'github.com/sourcegraph/terraform-aws-executors/blob/v:[version~\d+\.\d+\.\d+]' 'github.com/sourcegraph/terraform-aws-executors/blob/v{{tag}}' -i -f .md
         - name: "files(tf)"
-          cmd: comby "\"$(cat prev_tag)\"" '"{{tag}}"' -i -f .tf -exclude providers.tf
+          cmd: |
+            comby 'version = ":[version~\d+\.\d+\.\d+]" # LATEST' 'version = "{{tag}}" # LATEST' -i -f .tf
         - name: "family(name):docker-mirror"
           cmd: comby '["sourcegraph-executors-docker-mirror-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-docker-mirror-$(cat family_tag)-*\"]" -i -f .tf
         - name: "family(name):sourcegraph"
           cmd: comby '["sourcegraph-executors-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-$(cat family_tag)-*\"]" -i -f .tf
+        - name: "release:verify"
+          cmd: |
+            set -eu
+            family_tag=$(cat family_tag)
+
+            grep -Fq "sourcegraph-executors-docker-mirror-${family_tag}-*" modules/docker-mirror/main.tf
+            grep -Fq "sourcegraph-executors-${family_tag}-*" modules/executors/main.tf
+
+            if grep -REh --include='*.md' 'registry\.terraform\.io/modules/sourcegraph/executors/aws/[0-9]+\.[0-9]+\.[0-9]+|github\.com/sourcegraph/terraform-aws-executors/blob/v[0-9]+\.[0-9]+\.[0-9]+' . | grep -Fv '{{tag}}'; then
+              echo "Found a stale Terraform module reference after release updates"
+              exit 1
+            fi
+
+            if grep -REh --include='*.tf' 'version[[:space:]]*=[[:space:]]*"[0-9]+\.[0-9]+\.[0-9]+"[[:space:]]*# LATEST' . | grep -Fv '"{{tag}}"'; then
+              echo "Found a stale Terraform module version after release updates"
+              exit 1
+            fi
+
+            git diff --quiet -- modules/docker-mirror/main.tf && {
+              echo "Docker mirror image family was not updated"
+              exit 1
+            }
+            git diff --quiet -- modules/executors/main.tf && {
+              echo "Executor image family was not updated"
+              exit 1
+            }
         - name: "cleanup"
           cmd: |
             # remove files we used in previous steps
             rm -vf family_tag
-            rm -vf prev_tag
         - name: "git:branch"
           cmd: |
             set -eu
