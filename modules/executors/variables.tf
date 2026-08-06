@@ -23,7 +23,7 @@ variable "machine_image" {
 variable "machine_type" {
   type        = string
   default     = "c5n.metal" // 72 vCPU, 192GB
-  description = "Executor node machine type."
+  description = "Executor EC2 instance type. When using Firecracker, use either an amd64 bare-metal instance or an amd64 non-metal instance that has nested virtualization enabled and /dev/kvm available. See [Sourcegraph's executor requirements](https://sourcegraph.com/docs/self-hosted/executors/deploy-executors-binary#dependencies)."
 }
 
 variable "ami_version" {

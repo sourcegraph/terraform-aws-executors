@@ -33,6 +33,28 @@ The [single-executor example](https://github.com/sourcegraph/terraform-aws-execu
 Please follow our [setup guide](https://sourcegraph.com/docs/admin/executors/deploy_executors_terraform) on how to deploy
 executors using Terraform.
 
+### Sizing executor instances
+
+The root module uses `executor_machine_type` to select the EC2 instance type and defaults to `c5n.metal` (72 vCPUs and 192 GiB of memory). `c5n.metal` is not required: you can use any instance that meets the isolation requirements below. Choose its size based on per-job resources, concurrency, and measured workload, as described in Sourcegraph's [executor capacity guidance](https://sourcegraph.com/docs/self-hosted/executors/resource-sizing).
+
+Sourcegraph's [binary deployment requirements](https://sourcegraph.com/docs/self-hosted/executors/deploy-executors-binary#dependencies) specify that, when Firecracker isolation is enabled, the instance must be amd64 and expose KVM at `/dev/kvm`. You can use a bare-metal instance or a non-metal instance with AWS nested virtualization enabled. As of August 2026, [AWS supports nested virtualization](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/amazon-ec2-nested-virtualization.html#nested-virtualization-considerations) on the following Intel-based families: `C8i`, `M8i`, `R8i`, `C8id`, `M8id`, `R8id`, `C8i-flex`, `M8i-flex`, `R8i-flex`, `X8i`, `C7i`, `M7i`, `R7i`, `C7i-flex`, `M7i-flex`, and `I7i`. Nitro-based instances outside this list are not necessarily supported.
+
+[AWS requires nested virtualization to be enabled](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/amazon-ec2-nested-virtualization.html#nested-virtualization-launch-new-instance) as an EC2 CPU option when launching a supported non-metal instance; selecting the instance type alone does not enable it. If Firecracker isolation is disabled, KVM is not required.
+
+Each executor instance can run up to `executor_maximum_num_jobs` jobs concurrently (18 by default), and each job can use the resources configured by `executor_job_num_cpus` (4 by default) and `executor_job_memory` (`12GB` by default).
+
+Following Sourcegraph's [capacity calculation](https://sourcegraph.com/docs/self-hosted/executors/resource-sizing#calculate-capacity-for-concurrent-jobs), estimate the maximum concurrent demand as:
+
+- vCPUs: `executor_maximum_num_jobs * executor_job_num_cpus`
+- memory: `executor_maximum_num_jobs * executor_job_memory`
+- Firecracker disk: `executor_maximum_num_jobs * executor_firecracker_disk_space`
+
+These products are worst-case capacity-planning values, not reservations. The defaults allow overcommit on the assumption that jobs do not all reach every limit simultaneously. If that assumption does not fit your workload, select a larger instance or reduce `executor_maximum_num_jobs` and the per-job limits. Leave capacity for the operating system, the executor process, VM images, job workspaces, and other overhead. The root module's `executor_boot_disk_size` defaults to 100 GB.
+
+When `executor_use_firecracker` is enabled (the default), `executor_job_num_cpus` must be either `1` or an even number. `executor_firecracker_disk_space` must also be set to a valid data size such as `20GB` (the default). Before deploying, verify that the selected instance exposes `/dev/kvm`.
+
+If you use the `executors` submodule directly, use the corresponding unprefixed variables: `machine_type`, `maximum_num_jobs`, `job_num_cpus`, `job_memory`, `firecracker_disk_space`, and `boot_disk_size`.
+
 ### Custom Security Group
 
 By default, the Terraform module will create two security groups. One for the Docker Mirror and the other for 
