@@ -27,7 +27,7 @@ internal:
             comby 'github.com/sourcegraph/terraform-aws-executors/blob/v:[version~\d+\.\d+\.\d+]' 'github.com/sourcegraph/terraform-aws-executors/blob/v{{tag}}' -i -f .md
         - name: "files(tf)"
           cmd: |
-            comby 'version = ":[version~\d+\.\d+\.\d+]" # LATEST' 'version = "{{tag}}" # LATEST' -i -f .tf
+            comby 'version = ":[version~\d+\.\d+\.\d+]" # LATEST' 'version = "{{tag}}" # LATEST' -matcher .generic -i -f .tf
         - name: "family(name):docker-mirror"
           cmd: comby '["sourcegraph-executors-docker-mirror-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-docker-mirror-$(cat family_tag)-*\"]" -i -f .tf
         - name: "family(name):sourcegraph"
@@ -48,14 +48,14 @@ internal:
               echo "WARNING: Found a stale Terraform module version after release updates"
             fi
 
-            git diff --quiet -- modules/docker-mirror/main.tf && {
+            if git diff --quiet -- modules/docker-mirror/main.tf; then
               echo "Docker mirror image family was not updated"
               exit 1
-            }
-            git diff --quiet -- modules/executors/main.tf && {
+            fi
+            if git diff --quiet -- modules/executors/main.tf; then
               echo "Executor image family was not updated"
               exit 1
-            }
+            fi
         - name: "cleanup"
           cmd: |
             # remove files we used in previous steps
@@ -96,7 +96,7 @@ internal:
             comby 'github.com/sourcegraph/terraform-aws-executors/blob/v:[version~\d+\.\d+\.\d+]' 'github.com/sourcegraph/terraform-aws-executors/blob/v{{tag}}' -i -f .md
         - name: "files(tf)"
           cmd: |
-            comby 'version = ":[version~\d+\.\d+\.\d+]" # LATEST' 'version = "{{tag}}" # LATEST' -i -f .tf
+            comby 'version = ":[version~\d+\.\d+\.\d+]" # LATEST' 'version = "{{tag}}" # LATEST' -matcher .generic -i -f .tf
         - name: "family(name):docker-mirror"
           cmd: comby '["sourcegraph-executors-docker-mirror-:[~\d+-\d+]-*"]' "[\"sourcegraph-executors-docker-mirror-$(cat family_tag)-*\"]" -i -f .tf
         - name: "family(name):sourcegraph"
@@ -117,14 +117,14 @@ internal:
               echo "WARNING: Found a stale Terraform module version after release updates"
             fi
 
-            git diff --quiet -- modules/docker-mirror/main.tf && {
+            if git diff --quiet -- modules/docker-mirror/main.tf; then
               echo "Docker mirror image family was not updated"
               exit 1
-            }
-            git diff --quiet -- modules/executors/main.tf && {
+            fi
+            if git diff --quiet -- modules/executors/main.tf; then
               echo "Executor image family was not updated"
               exit 1
-            }
+            fi
         - name: "cleanup"
           cmd: |
             # remove files we used in previous steps
