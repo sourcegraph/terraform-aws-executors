@@ -48,14 +48,14 @@ internal:
               echo "WARNING: Found a stale Terraform module version after release updates"
             fi
 
-            git diff --quiet -- modules/docker-mirror/main.tf && {
+            if git diff --quiet -- modules/docker-mirror/main.tf; then
               echo "Docker mirror image family was not updated"
               exit 1
-            }
-            git diff --quiet -- modules/executors/main.tf && {
+            fi
+            if git diff --quiet -- modules/executors/main.tf; then
               echo "Executor image family was not updated"
               exit 1
-            }
+            fi
         - name: "cleanup"
           cmd: |
             # remove files we used in previous steps
@@ -117,14 +117,14 @@ internal:
               echo "WARNING: Found a stale Terraform module version after release updates"
             fi
 
-            git diff --quiet -- modules/docker-mirror/main.tf && {
+            if git diff --quiet -- modules/docker-mirror/main.tf; then
               echo "Docker mirror image family was not updated"
               exit 1
-            }
-            git diff --quiet -- modules/executors/main.tf && {
+            fi
+            if git diff --quiet -- modules/executors/main.tf; then
               echo "Executor image family was not updated"
               exit 1
-            }
+            fi
         - name: "cleanup"
           cmd: |
             # remove files we used in previous steps
