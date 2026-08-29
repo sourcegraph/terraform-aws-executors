@@ -5,6 +5,9 @@ steps:
   - label: ":lipstick:"
     command: .buildkite/terraform-fmt.sh
     agents: { queue: standard }
+  - label: ":gear: release-generated"
+    command: .buildkite/release-generated.sh
+    agents: { queue: standard }
   - label: ":lint-roller:"
     command: .buildkite/shellcheck.sh
     agents: { queue: standard }
