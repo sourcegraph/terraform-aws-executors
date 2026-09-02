@@ -54,7 +54,7 @@ data "aws_ami" "latest_ami" {
 
   filter {
     name   = "name"
-    values = ["sourcegraph-executors-docker-mirror-{{ family_version }}-*"]
+    values = ["sourcegraph-executors-docker-mirror-{{ .Release.Family }}-*"]
   }
 
   filter {

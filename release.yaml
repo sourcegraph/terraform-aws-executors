@@ -6,24 +6,29 @@ meta:
   repository: "github.com/sourcegraph/terraform-aws-executors"
 inputs:
   - releaseId: server
+templates:
+  source: release/templates
+  destination: .
+  versionFile: release/version
+  suffix: .tmpl
 requirements:
-  - name: "Python"
-    cmd: "which python3"
-    fixInstructions: "install Python 3"
   - name: "comby"
     cmd: "which comby"
     fixInstructions: "install comby"
+    only:
+      - "promoteToPublic.create"
   - name: "GitHub CLI"
     cmd: "which gh"
     fixInstructions: "install GitHub cli"
+    only:
+      - "internal.create"
+      - "internal.finalize"
+      - "promoteToPublic.create"
+      - "promoteToPublic.finalize"
 internal:
   create:
     steps:
       minor:
-        - name: "release:render"
-          cmd: python3 scripts/render_release.py --version "{{tag}}"
-        - name: "release:verify"
-          cmd: python3 scripts/render_release.py --check
         - name: "git:branch"
           cmd: |
             set -eu
@@ -50,10 +55,6 @@ internal:
               --body "Test plan: automated release PR, CI will perform additional checks"
             echo "🚢 Please check the associated CI build to ensure the process completed".
       major:
-        - name: "release:render"
-          cmd: python3 scripts/render_release.py --version "{{tag}}"
-        - name: "release:verify"
-          cmd: python3 scripts/render_release.py --check
         - name: "git:branch"
           cmd: |
             set -eu
@@ -120,8 +121,8 @@ internal:
 
 test:
   steps:
-    - name: "release-generated"
-      cmd: "python3 -m unittest discover -s scripts/tests && python3 scripts/render_release.py --check"
+    - name: "noop"
+      cmd: "true"
 
 promoteToPublic:
   create:

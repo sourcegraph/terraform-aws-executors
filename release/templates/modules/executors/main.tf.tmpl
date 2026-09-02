@@ -163,7 +163,7 @@ data "aws_ami" "latest_ami" {
 
   filter {
     name   = "name"
-    values = ["sourcegraph-executors-{{ family_version }}-*"]
+    values = ["sourcegraph-executors-{{ .Release.Family }}-*"]
   }
 
   filter {
