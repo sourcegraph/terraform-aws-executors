@@ -5,6 +5,11 @@ steps:
   - label: ":lipstick:"
     command: .buildkite/terraform-fmt.sh
     agents: { queue: standard }
+  - label: ":gear: release-generated"
+    plugins:
+      - ssh://git@github.com/sourcegraph/sg-buildkite-plugin.git#main: ~
+    command: .buildkite/release-generated.sh
+    agents: { queue: standard }
   - label: ":lint-roller:"
     command: .buildkite/shellcheck.sh
     agents: { queue: standard }
@@ -22,10 +27,6 @@ steps:
     plugins:
       - ssh://git@github.com/sourcegraph/sg-buildkite-plugin.git#main: ~
     command: |
-      wget https://github.com/comby-tools/comby/releases/download/1.8.1/comby-1.8.1-x86_64-linux
-      chmod +x ./comby-1.8.1-x86_64-linux
-      mv comby-1.8.1-x86_64-linux /usr/local/bin/comby
-
       sg release run test --workdir=. --config-from-commit
 
   - label: "(promote) Release: test"
@@ -33,10 +34,6 @@ steps:
     plugins:
       - ssh://git@github.com/sourcegraph/sg-buildkite-plugin.git#main: ~
     command: |
-      wget https://github.com/comby-tools/comby/releases/download/1.8.1/comby-1.8.1-x86_64-linux
-      chmod +x ./comby-1.8.1-x86_64-linux
-      mv comby-1.8.1-x86_64-linux /usr/local/bin/comby
-
       sg release run test --workdir=. --config-from-commit
 
   - wait
@@ -46,18 +43,10 @@ steps:
     plugins:
       - ssh://git@github.com/sourcegraph/sg-buildkite-plugin.git#main: ~
     command: |
-      wget https://github.com/comby-tools/comby/releases/download/1.8.1/comby-1.8.1-x86_64-linux
-      chmod +x ./comby-1.8.1-x86_64-linux
-      mv comby-1.8.1-x86_64-linux /usr/local/bin/comby
-
       sg release run internal finalize --workdir=. --config-from-commit
   - label: "(promote) Release: finalize"
     if: build.branch =~ /^promote\/release-.*/
     plugins:
       - ssh://git@github.com/sourcegraph/sg-buildkite-plugin.git#main: ~
     command: |
-      wget https://github.com/comby-tools/comby/releases/download/1.8.1/comby-1.8.1-x86_64-linux
-      chmod +x ./comby-1.8.1-x86_64-linux
-      mv comby-1.8.1-x86_64-linux /usr/local/bin/comby
-
       sg release run promote-to-public finalize --workdir=. --config-from-commit
