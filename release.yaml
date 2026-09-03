@@ -12,11 +12,6 @@ templates:
   versionFile: release/version
   suffix: .tmpl
 requirements:
-  - name: "comby"
-    cmd: "which comby"
-    fixInstructions: "install comby"
-    only:
-      - "promoteToPublic.create"
   - name: "GitHub CLI"
     cmd: "which gh"
     fixInstructions: "install GitHub cli"
@@ -134,11 +129,6 @@ promoteToPublic:
           echo "Checking out origin/${branch}"
           git fetch origin "${branch}"
           git switch "${branch}"
-      # Since we're promoting to public we need to remove the "internal" from the family
-      - name: "family(name):docker-mirror"
-        cmd: comby '["sourcegraph-executors-docker-mirror-:[family_tag_hole~\d+-\d+]-*"]' "[\"sourcegraph-executors-docker-mirror-:[family_tag_hole]-*\"]" -i -f .tf
-      - name: "family(name):sourcegraph"
-        cmd: comby '["sourcegraph-executors-:[family_tag_hole~\d+-\d+]-*"]' "[\"sourcegraph-executors-:[family_tag_hole]-*\"]" -i -f .tf
       - name: "git:branch"
         cmd: |
           set -eu
