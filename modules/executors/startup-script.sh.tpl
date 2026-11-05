@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
-set -euxo pipefail
+set -euo pipefail
 
-## Pull terraform variables into the environment.
+## Pull terraform variables into the environment. Tracing starts after this
+## block so secrets passed inline don't land in the console output.
 %{ for key, value in environment_variables }
 ${key}="${replace(value, "\"", "\\\\\\\"")}"
 %{ endfor ~}
+set -x
 
 # Conditionally set below
 DOCKER_REGISTRY_NODE_EXPORTER_URL_LINE=''
@@ -31,7 +33,72 @@ if [ "$${PRIVATE_CA_CERTIFICATE}" != '' ]; then
   echo "$${PRIVATE_CA_CERTIFICATE}" > /etc/ssl/certs/private_ca_cert.pem
 fi
 
-# Write the systemd environment file used by the executor service
+# Read the proxy password from Secrets Manager with the instance role. The AMI
+# has no AWS CLI, so the request is signed (SigV4) with the Python standard
+# library. Tracing is off here so the password and the role credentials don't
+# land in the console output.
+if [ "$${SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD_SECRET}" != '' ]; then
+  set +x
+  for attempt in 1 2 3 4 5; do
+    SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD=$(python3 - "$${SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD_SECRET}" "$${SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD_SECRET_KEY}" <<'PYTHON'
+import datetime, hashlib, hmac, json, sys, urllib.request
+
+secret_arn, secret_key = sys.argv[1], sys.argv[2]
+region = secret_arn.split(":")[3]
+
+
+def metadata(path, token=None):
+    headers = {"X-aws-ec2-metadata-token": token} if token else {"X-aws-ec2-metadata-token-ttl-seconds": "60"}
+    request = urllib.request.Request("http://169.254.169.254" + path, headers=headers, method="GET" if token else "PUT")
+    return urllib.request.urlopen(request, timeout=5).read().decode()
+
+
+token = metadata("/latest/api/token")
+role_name = metadata("/latest/meta-data/iam/security-credentials/", token)
+credentials = json.loads(metadata("/latest/meta-data/iam/security-credentials/" + role_name, token))
+
+host = f"secretsmanager.{region}.amazonaws.com"
+body = json.dumps({"SecretId": secret_arn})
+now = datetime.datetime.now(datetime.timezone.utc)
+amz_date, date_stamp = now.strftime("%Y%m%dT%H%M%SZ"), now.strftime("%Y%m%d")
+headers = {  # sorted by name, as SigV4 canonicalisation requires
+    "content-type": "application/x-amz-json-1.1",
+    "host": host,
+    "x-amz-date": amz_date,
+    "x-amz-security-token": credentials["Token"],
+    "x-amz-target": "secretsmanager.GetSecretValue",
+}
+signed_headers = ";".join(headers)
+canonical_request = "\n".join(["POST", "/", "", *(f"{name}:{value}" for name, value in headers.items()), "", signed_headers, hashlib.sha256(body.encode()).hexdigest()])
+scope = f"{date_stamp}/{region}/secretsmanager/aws4_request"
+string_to_sign = "\n".join(["AWS4-HMAC-SHA256", amz_date, scope, hashlib.sha256(canonical_request.encode()).hexdigest()])
+
+
+def sign(key, message):
+    return hmac.new(key, message.encode(), hashlib.sha256).digest()
+
+
+signing_key = sign(sign(sign(sign(("AWS4" + credentials["SecretAccessKey"]).encode(), date_stamp), region), "secretsmanager"), "aws4_request")
+signature = hmac.new(signing_key, string_to_sign.encode(), hashlib.sha256).hexdigest()
+headers["authorization"] = f"AWS4-HMAC-SHA256 Credential={credentials['AccessKeyId']}/{scope}, SignedHeaders={signed_headers}, Signature={signature}"
+
+request = urllib.request.Request(f"https://{host}/", data=body.encode(), headers=headers, method="POST")
+payload = json.load(urllib.request.urlopen(request, timeout=10))["SecretString"]
+print(json.loads(payload)[secret_key] if secret_key else payload.rstrip("\n"))
+PYTHON
+    ) && break
+    sleep $((attempt * 5))
+  done
+  if [ "$${SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD}" = '' ]; then
+    echo "Could not read a non-empty executor proxy password from $${SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD_SECRET}" >&2
+    exit 1
+  fi
+  set -x
+fi
+
+# Write the systemd environment file used by the executor service. It holds
+# the proxy password and docker auth config, so only root may read it.
+install -m 600 /dev/null /etc/systemd/system/executor.env
 cat <<EOF >/etc/systemd/system/executor.env
 EXECUTOR_QUEUE_NAME="$${EXECUTOR_QUEUE_NAME}"
 EXECUTOR_QUEUE_NAMES="$${EXECUTOR_QUEUE_NAMES}"

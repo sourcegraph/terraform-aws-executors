@@ -85,8 +85,21 @@ variable "sourcegraph_external_url" {
 
 variable "sourcegraph_executor_proxy_password" {
   type        = string
-  description = "The shared password used to authenticate requests to the internal executor proxy."
+  default     = ""
+  description = "The shared password used to authenticate requests to the internal executor proxy. Either this or `sourcegraph_executor_proxy_password_secret` is required."
   sensitive   = true
+}
+
+variable "sourcegraph_executor_proxy_password_secret" {
+  type        = string
+  default     = ""
+  description = "ARN of an AWS Secrets Manager secret holding the executor proxy password. Executors read its current version at boot with the instance role, so the password never enters Terraform state or instance user data. If the secret uses a customer-managed KMS key, grant the executor role `kms:Decrypt` on it. Either this or `sourcegraph_executor_proxy_password` is required."
+}
+
+variable "sourcegraph_executor_proxy_password_secret_key" {
+  type        = string
+  default     = ""
+  description = "When set, the secret payload is a JSON object and this key holds the password, e.g. `executors.accessToken` for a secret containing site configuration. Leave empty when the payload is the password itself."
 }
 
 variable "queue_name" {
