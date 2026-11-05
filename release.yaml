@@ -23,6 +23,32 @@ requirements:
 internal:
   create:
     steps:
+      patch:
+        - name: "git:branch"
+          cmd: |
+            set -eu
+            branch="internal/release-{{version}}"
+            echo "Creating branch $branch"
+            git checkout -b $branch
+        - name: "git:commit"
+          cmd: |
+            # Careful with the quoting for the config, using double quotes will lead
+            # to the shell dropping out all quotes from the json, leading to failed
+            # parsing.
+            git commit -am "release_patch: {{version}}" -m '{{config}}'
+        - name: "git:push"
+          cmd: |
+            branch="internal/release-{{version}}"
+            git push origin "$branch"
+        - name: "github:pr"
+          cmd: |
+            set -eu
+            gh pr create \
+              --fill \
+              --draft \
+              --title "(internal) release_patch: build {{version}}" \
+              --body "Test plan: automated release PR, CI will perform additional checks"
+            echo "🚢 Please check the associated CI build to ensure the process completed".
       minor:
         - name: "git:branch"
           cmd: |
