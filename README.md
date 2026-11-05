@@ -51,7 +51,7 @@ An example `iam-policy.json` is provided to demonstrate the minimal permissions 
 
 ## Compatibility with Sourcegraph
 
-The **major** and **minor** versions both need to match the Sourcegraph version the executors are talking to. Patch version **don't** need to match and it's generally advised to use the latest available.
+The **major** and **minor** versions both need to match the Sourcegraph version the executors are talking to. Each module version provisions the executor AMI built for the Sourcegraph version of the same number, so the patch version is best matched too; it is not required.
 For example:
 
 | **Sourcegraph version** | **Terraform module version** |
