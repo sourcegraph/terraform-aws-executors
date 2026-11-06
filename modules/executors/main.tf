@@ -108,7 +108,7 @@ resource "aws_iam_role_policy_attachment" "ssm" {
 # Lets the executor instance read the proxy password from Secrets Manager at
 # boot, and decrypt it when the secret uses a customer-managed KMS key.
 resource "aws_iam_role_policy" "secret_reader" {
-  count = var.sourcegraph_executor_proxy_password_secret != "" ? 1 : 0
+  count = var.sourcegraph_executor_proxy_password_secret_name != "" ? 1 : 0
   name  = "${local.prefix}executors_secret_reader"
   role  = aws_iam_role.ec2-role.name
 
@@ -118,7 +118,7 @@ resource "aws_iam_role_policy" "secret_reader" {
       [{
         Effect   = "Allow"
         Action   = "secretsmanager:GetSecretValue"
-        Resource = var.sourcegraph_executor_proxy_password_secret
+        Resource = var.sourcegraph_executor_proxy_password_secret_name
       }],
       var.sourcegraph_executor_proxy_password_secret_kms_key == "" ? [] : [{
         Effect   = "Allow"
@@ -285,25 +285,25 @@ resource "aws_launch_template" "executor" {
   # Render the startup script using all variables defined.
   user_data = base64encode(templatefile("${path.module}/startup-script.sh.tpl", {
     environment_variables = {
-      "EXECUTOR_DOCKER_REGISTRY_MIRROR"                = var.docker_registry_mirror
-      "DOCKER_REGISTRY_NODE_EXPORTER_URL"              = var.docker_registry_mirror_node_exporter_url
-      "SOURCEGRAPH_EXTERNAL_URL"                       = var.sourcegraph_external_url
-      "SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD"            = var.sourcegraph_executor_proxy_password
-      "SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD_SECRET"     = var.sourcegraph_executor_proxy_password_secret
-      "SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD_SECRET_KEY" = var.sourcegraph_executor_proxy_password_secret_key
-      "EXECUTOR_MAXIMUM_NUM_JOBS"                      = var.maximum_num_jobs
-      "EXECUTOR_JOB_NUM_CPUS"                          = var.job_num_cpus != "" ? var.job_num_cpus : var.firecracker_num_cpus
-      "EXECUTOR_JOB_MEMORY"                            = var.job_memory != "" ? var.job_memory : var.firecracker_memory
-      "EXECUTOR_FIRECRACKER_DISK_SPACE"                = var.firecracker_disk_space
-      "EXECUTOR_QUEUE_NAME"                            = var.queue_name
-      "EXECUTOR_QUEUE_NAMES"                           = local.queue_names
-      "EXECUTOR_MAXIMUM_RUNTIME_PER_JOB"               = var.maximum_runtime_per_job
-      "EXECUTOR_NUM_TOTAL_JOBS"                        = var.num_total_jobs
-      "EXECUTOR_MAX_ACTIVE_TIME"                       = var.max_active_time
-      "EXECUTOR_USE_FIRECRACKER"                       = var.use_firecracker
-      "EXECUTOR_DOCKER_AUTH_CONFIG"                    = var.docker_auth_config
-      "PRIVATE_CA_CERTIFICATE"                         = var.private_ca_cert_path != "" ? file(var.private_ca_cert_path) : ""
-      "CLOUDWATCH_LOG_GROUP_NAME"                      = local.cloudwatch_log_group.name
+      "EXECUTOR_DOCKER_REGISTRY_MIRROR"                      = var.docker_registry_mirror
+      "DOCKER_REGISTRY_NODE_EXPORTER_URL"                    = var.docker_registry_mirror_node_exporter_url
+      "SOURCEGRAPH_EXTERNAL_URL"                             = var.sourcegraph_external_url
+      "SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD"                  = var.sourcegraph_executor_proxy_password
+      "SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD_SECRET_NAME"      = var.sourcegraph_executor_proxy_password_secret_name
+      "SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD_SECRET_JSON_PATH" = var.sourcegraph_executor_proxy_password_secret_json_path
+      "EXECUTOR_MAXIMUM_NUM_JOBS"                            = var.maximum_num_jobs
+      "EXECUTOR_JOB_NUM_CPUS"                                = var.job_num_cpus != "" ? var.job_num_cpus : var.firecracker_num_cpus
+      "EXECUTOR_JOB_MEMORY"                                  = var.job_memory != "" ? var.job_memory : var.firecracker_memory
+      "EXECUTOR_FIRECRACKER_DISK_SPACE"                      = var.firecracker_disk_space
+      "EXECUTOR_QUEUE_NAME"                                  = var.queue_name
+      "EXECUTOR_QUEUE_NAMES"                                 = local.queue_names
+      "EXECUTOR_MAXIMUM_RUNTIME_PER_JOB"                     = var.maximum_runtime_per_job
+      "EXECUTOR_NUM_TOTAL_JOBS"                              = var.num_total_jobs
+      "EXECUTOR_MAX_ACTIVE_TIME"                             = var.max_active_time
+      "EXECUTOR_USE_FIRECRACKER"                             = var.use_firecracker
+      "EXECUTOR_DOCKER_AUTH_CONFIG"                          = var.docker_auth_config
+      "PRIVATE_CA_CERTIFICATE"                               = var.private_ca_cert_path != "" ? file(var.private_ca_cert_path) : ""
+      "CLOUDWATCH_LOG_GROUP_NAME"                            = local.cloudwatch_log_group.name
     }
   }))
 
@@ -313,8 +313,8 @@ resource "aws_launch_template" "executor" {
     create_before_destroy = true
 
     precondition {
-      condition     = (var.sourcegraph_executor_proxy_password != "") != (var.sourcegraph_executor_proxy_password_secret != "")
-      error_message = "Set exactly one of sourcegraph_executor_proxy_password or sourcegraph_executor_proxy_password_secret."
+      condition     = (var.sourcegraph_executor_proxy_password != "") != (var.sourcegraph_executor_proxy_password_secret_name != "")
+      error_message = "Set exactly one of sourcegraph_executor_proxy_password or sourcegraph_executor_proxy_password_secret_name."
     }
   }
 
