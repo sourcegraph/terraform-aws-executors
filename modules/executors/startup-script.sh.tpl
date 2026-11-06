@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
-set -euxo pipefail
+set -euo pipefail
 
-## Pull terraform variables into the environment.
+## Pull terraform variables into the environment. Tracing starts after this
+## block so secrets passed inline don't land in the console output.
 %{ for key, value in environment_variables }
 ${key}="${replace(value, "\"", "\\\\\\\"")}"
 %{ endfor ~}
+set -x
 
 # Conditionally set below
 DOCKER_REGISTRY_NODE_EXPORTER_URL_LINE=''
@@ -31,7 +33,44 @@ if [ "$${PRIVATE_CA_CERTIFICATE}" != '' ]; then
   echo "$${PRIVATE_CA_CERTIFICATE}" > /etc/ssl/certs/private_ca_cert.pem
 fi
 
-# Write the systemd environment file used by the executor service
+# Read the proxy password from Secrets Manager with the instance role. The AMI
+# has no AWS CLI, so curl signs the request itself (--aws-sigv4) with the
+# role's credentials from IMDSv2. Tracing is off here so the password and the
+# credentials don't land in the console output; the credentials reach curl
+# through its config on stdin, not the command line.
+if [ "$${SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD_SECRET_NAME}" != '' ]; then
+  set +x
+  read_secret() {
+    local imds_token role_name key_id secret_key session_token region curl_credentials
+    imds_token=$(curl -sSf -X PUT -H 'X-aws-ec2-metadata-token-ttl-seconds: 60' http://169.254.169.254/latest/api/token)
+    role_name=$(curl -sSf -H "X-aws-ec2-metadata-token: $${imds_token}" http://169.254.169.254/latest/meta-data/iam/security-credentials/)
+    read -r key_id secret_key session_token < <(curl -sSf -H "X-aws-ec2-metadata-token: $${imds_token}" \
+      "http://169.254.169.254/latest/meta-data/iam/security-credentials/$${role_name}" \
+      | python3 -c 'import json, sys; c = json.load(sys.stdin); print(c["AccessKeyId"], c["SecretAccessKey"], c["Token"])')
+    region=$(cut -d: -f4 <<<"$${SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD_SECRET_NAME}")
+    curl_credentials=$(printf '%s\n' \
+      "user = \"$${key_id}:$${secret_key}\"" \
+      "header = \"x-amz-security-token: $${session_token}\"")
+    curl -sSf -X POST "https://secretsmanager.$${region}.amazonaws.com/" \
+      --aws-sigv4 "aws:amz:$${region}:secretsmanager" --config - <<<"$${curl_credentials}" \
+      -H 'x-amz-target: secretsmanager.GetSecretValue' -H 'content-type: application/x-amz-json-1.1' \
+      -d "{\"SecretId\":\"$${SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD_SECRET_NAME}\"}" \
+      | python3 -c 'import json, sys; print(json.load(sys.stdin)["SecretString"].rstrip("\n"))'
+  }
+  for attempt in 1 2 3 4 5; do
+    SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD=$(read_secret) && break
+    sleep $((attempt * 5))
+  done
+  if [ "$${SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD}" = '' ]; then
+    echo "Could not read a non-empty executor proxy password from $${SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD_SECRET_NAME}" >&2
+    exit 1
+  fi
+  set -x
+fi
+
+# Write the systemd environment file used by the executor service. It holds
+# the proxy password and docker auth config, so only root may read it.
+install -m 600 /dev/null /etc/systemd/system/executor.env
 cat <<EOF >/etc/systemd/system/executor.env
 EXECUTOR_QUEUE_NAME="$${EXECUTOR_QUEUE_NAME}"
 EXECUTOR_QUEUE_NAMES="$${EXECUTOR_QUEUE_NAMES}"
