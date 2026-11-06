@@ -55,12 +55,7 @@ if [ "$${SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD_SECRET_NAME}" != '' ]; then
       --aws-sigv4 "aws:amz:$${region}:secretsmanager" --config - <<<"$${curl_credentials}" \
       -H 'x-amz-target: secretsmanager.GetSecretValue' -H 'content-type: application/x-amz-json-1.1' \
       -d "{\"SecretId\":\"$${SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD_SECRET_NAME}\"}" \
-      | python3 -c '
-import json, sys
-payload = json.load(sys.stdin)["SecretString"]
-json_path = sys.argv[1]
-print(json.loads(payload)[json_path] if json_path else payload.rstrip("\n"))
-' "$${SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD_SECRET_JSON_PATH}"
+      | python3 -c 'import json, sys; print(json.load(sys.stdin)["SecretString"].rstrip("\n"))'
   }
   for attempt in 1 2 3 4 5; do
     SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD=$(read_secret) && break

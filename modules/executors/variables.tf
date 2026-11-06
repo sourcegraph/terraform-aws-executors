@@ -102,12 +102,6 @@ variable "sourcegraph_executor_proxy_password_secret_kms_key" {
   description = "ARN of the customer-managed KMS key that encrypts `sourcegraph_executor_proxy_password_secret_name`, if it does not use the AWS-managed `aws/secretsmanager` key. The executor role is granted `kms:Decrypt` on it."
 }
 
-variable "sourcegraph_executor_proxy_password_secret_json_path" {
-  type        = string
-  default     = ""
-  description = "When set, the secret payload is a JSON object and this top-level key holds the password, e.g. `executors.accessToken` for a secret containing site configuration (the dot is part of the key, not a nested path). Leave empty when the payload is the password itself."
-}
-
 variable "queue_name" {
   type        = string
   default     = ""
