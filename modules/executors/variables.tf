@@ -93,7 +93,7 @@ variable "sourcegraph_executor_proxy_password" {
 variable "sourcegraph_executor_proxy_password_secret" {
   type        = string
   default     = ""
-  description = "ARN of an AWS Secrets Manager secret holding the executor proxy password. Executors read its current version at boot with the instance role, so the password never enters Terraform state or instance user data. Either this or `sourcegraph_executor_proxy_password` is required."
+  description = "ARN of an AWS Secrets Manager secret holding the executor proxy password. Executors read its current version at boot with the instance role, so the password never enters Terraform state or instance user data. Either this or `sourcegraph_executor_proxy_password` is required. The ARN must be known at plan time (a literal or a data source lookup, not a secret created in the same apply), because the IAM policy that grants access to it is conditional on it."
 }
 
 variable "sourcegraph_executor_proxy_password_secret_kms_key" {
