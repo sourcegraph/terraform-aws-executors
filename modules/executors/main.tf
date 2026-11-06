@@ -309,6 +309,9 @@ resource "aws_launch_template" "executor" {
 
   update_default_version = true
 
+  # Instances read the secret at boot, so the policy must exist before the first one starts.
+  depends_on = [aws_iam_role_policy.secret_reader]
+
   lifecycle {
     create_before_destroy = true
 
