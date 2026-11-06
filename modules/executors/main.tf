@@ -105,7 +105,8 @@ resource "aws_iam_role_policy_attachment" "ssm" {
   policy_arn = data.aws_iam_policy.ssm.arn
 }
 
-# Lets the executor instance read the proxy password from Secrets Manager at boot.
+# Lets the executor instance read the proxy password from Secrets Manager at
+# boot, and decrypt it when the secret uses a customer-managed KMS key.
 resource "aws_iam_role_policy" "secret_reader" {
   count = var.sourcegraph_executor_proxy_password_secret != "" ? 1 : 0
   name  = "${local.prefix}executors_secret_reader"
@@ -113,11 +114,18 @@ resource "aws_iam_role_policy" "secret_reader" {
 
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{
-      Effect   = "Allow"
-      Action   = "secretsmanager:GetSecretValue"
-      Resource = var.sourcegraph_executor_proxy_password_secret
-    }]
+    Statement = concat(
+      [{
+        Effect   = "Allow"
+        Action   = "secretsmanager:GetSecretValue"
+        Resource = var.sourcegraph_executor_proxy_password_secret
+      }],
+      var.sourcegraph_executor_proxy_password_secret_kms_key == "" ? [] : [{
+        Effect   = "Allow"
+        Action   = "kms:Decrypt"
+        Resource = var.sourcegraph_executor_proxy_password_secret_kms_key
+      }],
+    )
   })
 }
 

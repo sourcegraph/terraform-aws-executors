@@ -112,7 +112,13 @@ variable "executor_sourcegraph_executor_proxy_password" {
 variable "executor_sourcegraph_executor_proxy_password_secret" {
   type        = string
   default     = ""
-  description = "ARN of an AWS Secrets Manager secret holding the executor proxy password. Executors read its current version at boot with the instance role, so the password never enters Terraform state or instance user data. If the secret uses a customer-managed KMS key, grant the executor role `kms:Decrypt` on it. Either this or `executor_sourcegraph_executor_proxy_password` is required."
+  description = "ARN of an AWS Secrets Manager secret holding the executor proxy password. Executors read its current version at boot with the instance role, so the password never enters Terraform state or instance user data. Either this or `executor_sourcegraph_executor_proxy_password` is required."
+}
+
+variable "executor_sourcegraph_executor_proxy_password_secret_kms_key" {
+  type        = string
+  default     = ""
+  description = "ARN of the customer-managed KMS key that encrypts `executor_sourcegraph_executor_proxy_password_secret`, if it does not use the AWS-managed `aws/secretsmanager` key. The executor role is granted `kms:Decrypt` on it."
 }
 
 variable "executor_sourcegraph_executor_proxy_password_secret_key" {
