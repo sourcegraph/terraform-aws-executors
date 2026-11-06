@@ -34,59 +34,36 @@ if [ "$${PRIVATE_CA_CERTIFICATE}" != '' ]; then
 fi
 
 # Read the proxy password from Secrets Manager with the instance role. The AMI
-# has no AWS CLI, so the request is signed (SigV4) with the Python standard
-# library. Tracing is off here so the password and the role credentials don't
-# land in the console output.
+# has no AWS CLI, so curl signs the request itself (--aws-sigv4) with the
+# role's credentials from IMDSv2. Tracing is off here so the password and the
+# credentials don't land in the console output; the credentials reach curl
+# through its config on stdin, not the command line.
 if [ "$${SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD_SECRET}" != '' ]; then
   set +x
+  read_secret() {
+    local imds_token role_name key_id secret_key session_token region curl_credentials
+    imds_token=$(curl -sSf -X PUT -H 'X-aws-ec2-metadata-token-ttl-seconds: 60' http://169.254.169.254/latest/api/token)
+    role_name=$(curl -sSf -H "X-aws-ec2-metadata-token: $${imds_token}" http://169.254.169.254/latest/meta-data/iam/security-credentials/)
+    read -r key_id secret_key session_token < <(curl -sSf -H "X-aws-ec2-metadata-token: $${imds_token}" \
+      "http://169.254.169.254/latest/meta-data/iam/security-credentials/$${role_name}" \
+      | python3 -c 'import json, sys; c = json.load(sys.stdin); print(c["AccessKeyId"], c["SecretAccessKey"], c["Token"])')
+    region=$(cut -d: -f4 <<<"$${SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD_SECRET}")
+    curl_credentials=$(printf '%s\n' \
+      "user = \"$${key_id}:$${secret_key}\"" \
+      "header = \"x-amz-security-token: $${session_token}\"")
+    curl -sSf -X POST "https://secretsmanager.$${region}.amazonaws.com/" \
+      --aws-sigv4 "aws:amz:$${region}:secretsmanager" --config - <<<"$${curl_credentials}" \
+      -H 'x-amz-target: secretsmanager.GetSecretValue' -H 'content-type: application/x-amz-json-1.1' \
+      -d "{\"SecretId\":\"$${SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD_SECRET}\"}" \
+      | python3 -c '
+import json, sys
+payload = json.load(sys.stdin)["SecretString"]
+key = sys.argv[1]
+print(json.loads(payload)[key] if key else payload.rstrip("\n"))
+' "$${SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD_SECRET_KEY}"
+  }
   for attempt in 1 2 3 4 5; do
-    SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD=$(python3 - "$${SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD_SECRET}" "$${SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD_SECRET_KEY}" <<'PYTHON'
-import datetime, hashlib, hmac, json, sys, urllib.request
-
-secret_arn, secret_key = sys.argv[1], sys.argv[2]
-region = secret_arn.split(":")[3]
-
-
-def metadata(path, token=None):
-    headers = {"X-aws-ec2-metadata-token": token} if token else {"X-aws-ec2-metadata-token-ttl-seconds": "60"}
-    request = urllib.request.Request("http://169.254.169.254" + path, headers=headers, method="GET" if token else "PUT")
-    return urllib.request.urlopen(request, timeout=5).read().decode()
-
-
-token = metadata("/latest/api/token")
-role_name = metadata("/latest/meta-data/iam/security-credentials/", token)
-credentials = json.loads(metadata("/latest/meta-data/iam/security-credentials/" + role_name, token))
-
-host = f"secretsmanager.{region}.amazonaws.com"
-body = json.dumps({"SecretId": secret_arn})
-now = datetime.datetime.now(datetime.timezone.utc)
-amz_date, date_stamp = now.strftime("%Y%m%dT%H%M%SZ"), now.strftime("%Y%m%d")
-headers = {  # sorted by name, as SigV4 canonicalisation requires
-    "content-type": "application/x-amz-json-1.1",
-    "host": host,
-    "x-amz-date": amz_date,
-    "x-amz-security-token": credentials["Token"],
-    "x-amz-target": "secretsmanager.GetSecretValue",
-}
-signed_headers = ";".join(headers)
-canonical_request = "\n".join(["POST", "/", "", *(f"{name}:{value}" for name, value in headers.items()), "", signed_headers, hashlib.sha256(body.encode()).hexdigest()])
-scope = f"{date_stamp}/{region}/secretsmanager/aws4_request"
-string_to_sign = "\n".join(["AWS4-HMAC-SHA256", amz_date, scope, hashlib.sha256(canonical_request.encode()).hexdigest()])
-
-
-def sign(key, message):
-    return hmac.new(key, message.encode(), hashlib.sha256).digest()
-
-
-signing_key = sign(sign(sign(sign(("AWS4" + credentials["SecretAccessKey"]).encode(), date_stamp), region), "secretsmanager"), "aws4_request")
-signature = hmac.new(signing_key, string_to_sign.encode(), hashlib.sha256).hexdigest()
-headers["authorization"] = f"AWS4-HMAC-SHA256 Credential={credentials['AccessKeyId']}/{scope}, SignedHeaders={signed_headers}, Signature={signature}"
-
-request = urllib.request.Request(f"https://{host}/", data=body.encode(), headers=headers, method="POST")
-payload = json.load(urllib.request.urlopen(request, timeout=10))["SecretString"]
-print(json.loads(payload)[secret_key] if secret_key else payload.rstrip("\n"))
-PYTHON
-    ) && break
+    SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD=$(read_secret) && break
     sleep $((attempt * 5))
   done
   if [ "$${SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD}" = '' ]; then
