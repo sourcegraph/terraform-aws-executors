@@ -37,10 +37,10 @@ variable "boot_disk_size" {
   description = "Docker registry mirror node disk size in GB."
 }
 
-variable "boot_disk_kms_key_id" {
+variable "boot_disk_kms_key" {
   type        = string
-  default     = null
-  description = "[Optional] The KMS Key ID for EBS volume encryption."
+  default     = ""
+  description = "ARN of the customer-managed KMS key that encrypts the Docker registry mirror boot disk. Leave empty to use the AWS-managed `aws/ebs` key."
 }
 
 variable "disk_size" {
@@ -61,10 +61,10 @@ variable "disk_throughput" {
   description = "Persistent Docker registry mirror disk throughput in MiB/s."
 }
 
-variable "disk_kms_key_id" {
+variable "disk_kms_key" {
   type        = string
-  default     = null
-  description = "[Optional] The KMS Key ID for mirror disk EBS volume encryption."
+  default     = ""
+  description = "ARN of the customer-managed KMS key that encrypts the persistent Docker registry mirror disk. Leave empty to use the AWS-managed `aws/ebs` key."
 }
 
 variable "static_ip" {

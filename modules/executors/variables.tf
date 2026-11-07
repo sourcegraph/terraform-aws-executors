@@ -55,10 +55,10 @@ variable "boot_disk_throughput" {
   description = "Executor node disk throughput in MiB/s."
 }
 
-variable "boot_disk_kms_key_id" {
+variable "boot_disk_kms_key" {
   type        = string
-  default     = null
-  description = "[Optional] The KMS Key ID for EBS volume encryption."
+  default     = ""
+  description = "ARN of the customer-managed KMS key that encrypts the executor boot disks. Leave empty to use the AWS-managed `aws/ebs` key."
 }
 
 variable "preemptible_machines" {

@@ -245,7 +245,7 @@ resource "aws_launch_template" "executor" {
       iops        = var.boot_disk_iops
       throughput  = var.boot_disk_throughput
       encrypted   = true
-      kms_key_id  = var.boot_disk_kms_key_id
+      kms_key_id  = var.boot_disk_kms_key == "" ? null : var.boot_disk_kms_key
     }
   }
 

@@ -21,16 +21,16 @@ variable "docker_mirror_boot_disk_size" {
   description = "Docker registry mirror node disk size in GB."
 }
 
-variable "docker_mirror_boot_disk_kms_key_id" {
+variable "docker_mirror_boot_disk_kms_key" {
   type        = string
-  default     = null
-  description = "[Optional] KMS Key ID for EBS boot disk encryption"
+  default     = ""
+  description = "ARN of the customer-managed KMS key that encrypts the Docker registry mirror boot disk. Leave empty to use the AWS-managed `aws/ebs` key."
 }
 
-variable "docker_mirror_disk_kms_key_id" {
+variable "docker_mirror_disk_kms_key" {
   type        = string
-  default     = null
-  description = "[Optional] KMS Key ID for EBS disk encryption"
+  default     = ""
+  description = "ARN of the customer-managed KMS key that encrypts the persistent Docker registry mirror disk. Leave empty to use the AWS-managed `aws/ebs` key."
 }
 
 variable "docker_mirror_disk_iops" {
@@ -81,10 +81,10 @@ variable "executor_boot_disk_size" {
   description = "Executor node disk size in GB"
 }
 
-variable "executor_boot_disk_kms_key_id" {
+variable "executor_boot_disk_kms_key" {
   type        = string
-  default     = null
-  description = "[Optional] KMS Key ID for EBS boot disk encryption"
+  default     = ""
+  description = "ARN of the customer-managed KMS key that encrypts the executor boot disks. Leave empty to use the AWS-managed `aws/ebs` key."
 }
 
 variable "executor_boot_disk_iops" {
