@@ -60,7 +60,7 @@ variable "executor_machine_image" {
 variable "executor_machine_type" {
   type        = string
   default     = "m8i.2xlarge" // 8 vCPU, 32GB
-  description = "Executor node machine type. The default matches the 8 vCPU / 32 GB shape Sourcegraph Cloud runs executors on. With use_firecracker, a non-bare-metal type must support nested virtualization (Intel C7i/M7i/R7i, C8i/M8i/R8i and their -flex and -id variants); bare metal types (*.metal) work as before."
+  description = "Executor node machine type. The default matches the 8 vCPU / 32 GB shape Sourcegraph Cloud runs executors on. With use_firecracker, the type must be bare metal or support nested virtualization (Intel M7i/M8i/C7i/C8i/R7i/R8i/I7i/X8i and their -flex and -id variants); the module checks this against the EC2 API at plan time and enables nested virtualization on virtual types."
 }
 
 variable "executor_boot_disk_size" {
