@@ -129,6 +129,7 @@ resource "aws_instance" "default" {
 
   user_data_base64 = base64encode(templatefile("${path.module}/startup-script.sh.tpl", {
     cloudwatch_log_group_name = local.cloudwatch_log_group.name
+    docker_storage_volume_id  = aws_ebs_volume.docker-storage.id
   }))
 }
 

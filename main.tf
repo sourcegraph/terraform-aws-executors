@@ -9,6 +9,7 @@ module "aws-networking" {
 
 module "aws-docker-mirror" {
   source = "./modules/docker-mirror"
+  count  = var.deploy_docker_mirror ? 1 : 0
 
   randomize_resource_names               = var.randomize_resource_names
   resource_prefix                        = var.executor_resource_prefix
@@ -59,8 +60,8 @@ module "aws-executor" {
   max_replicas                                       = var.executor_max_replicas
   jobs_per_instance_scaling                          = var.executor_jobs_per_instance_scaling
   metrics_environment_label                          = var.executor_metrics_environment_label
-  docker_registry_mirror                             = "http://${var.docker_mirror_static_ip}:5000"
-  docker_registry_mirror_node_exporter_url           = "http://${var.docker_mirror_static_ip}:9999"
+  docker_registry_mirror                             = var.deploy_docker_mirror ? "http://${var.docker_mirror_static_ip}:5000" : ""
+  docker_registry_mirror_node_exporter_url           = var.deploy_docker_mirror ? "http://${var.docker_mirror_static_ip}:9999" : ""
   assign_public_ip                                   = var.private_networking ? false : true
   metrics_access_security_group_id                   = var.security_group_id
   docker_auth_config                                 = var.executor_docker_auth_config

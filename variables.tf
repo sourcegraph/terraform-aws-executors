@@ -3,6 +3,12 @@ variable "availability_zone" {
   description = "The availability zone to create the instance in."
 }
 
+variable "deploy_docker_mirror" {
+  type        = bool
+  default     = true
+  description = "Whether to deploy the Docker registry mirror and point the executors at it. Set to false when executors should pull straight from the public registries."
+}
+
 variable "docker_mirror_machine_ami" {
   type        = string
   default     = ""
