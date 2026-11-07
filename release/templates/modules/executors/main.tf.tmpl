@@ -342,6 +342,23 @@ resource "random_id" "autoscaling_group" {
 
 data "aws_default_tags" "current" {}
 
+data "aws_caller_identity" "current" {}
+
+data "aws_partition" "current" {}
+
+# Auto Scaling launches instances with its own service-linked role, which has
+# no access to customer-managed KMS keys by default. Without this grant the
+# instances fail to launch when boot_disk_kms_key is set. The grant delegates
+# the key operations AWS documents for EBS encryption:
+# https://docs.aws.amazon.com/autoscaling/ec2/userguide/key-policy-requirements-EBS-encryption.html
+resource "aws_kms_grant" "autoscaling_boot_disk" {
+  count             = var.boot_disk_kms_key == "" ? 0 : 1
+  name              = "${local.prefix}executors_autoscaling_boot_disk"
+  key_id            = var.boot_disk_kms_key
+  grantee_principal = "arn:${data.aws_partition.current.partition}:iam::${data.aws_caller_identity.current.account_id}:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling"
+  operations        = ["Encrypt", "Decrypt", "ReEncryptFrom", "ReEncryptTo", "GenerateDataKey", "GenerateDataKeyWithoutPlaintext", "DescribeKey", "CreateGrant"]
+}
+
 resource "aws_autoscaling_group" "autoscaler" {
   name                      = local.autoscaling_group.name
   min_size                  = var.min_replicas
@@ -390,6 +407,9 @@ resource "aws_autoscaling_group" "autoscaler" {
     id      = aws_launch_template.executor.id
     version = "$Latest"
   }
+
+  # The first instances launch during create, so the grant must exist first.
+  depends_on = [aws_kms_grant.autoscaling_boot_disk]
 }
 
 resource "random_id" "cloudwatch_metric_alarm_out" {

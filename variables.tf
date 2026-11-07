@@ -84,7 +84,7 @@ variable "executor_boot_disk_size" {
 variable "executor_boot_disk_kms_key" {
   type        = string
   default     = ""
-  description = "ARN of the customer-managed KMS key that encrypts the executor boot disks. Leave empty to use the AWS-managed `aws/ebs` key."
+  description = "ARN of the customer-managed KMS key that encrypts the executor boot disks. Leave empty to use the AWS-managed `aws/ebs` key. The `AWSServiceRoleForAutoScaling` service-linked role is granted use of the key, so it must already exist in the account. The ARN must be known at plan time (a literal or a data source lookup, not a key created in the same apply), because the grant is conditional on it."
 }
 
 variable "executor_boot_disk_iops" {
