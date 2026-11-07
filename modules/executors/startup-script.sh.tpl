@@ -2,9 +2,10 @@
 set -euo pipefail
 
 ## Pull terraform variables into the environment. Tracing starts after this
-## block so secrets passed inline don't land in the console output.
+## block so secrets passed inline don't land in the console output. Values are
+## single-quoted so bash takes them literally, whatever characters they hold.
 %{ for key, value in environment_variables }
-${key}="${replace(value, "\"", "\\\\\\\"")}"
+${key}='${replace(value, "'", "'\\''")}'
 %{ endfor ~}
 set -x
 
@@ -70,6 +71,15 @@ fi
 
 # Write the systemd environment file used by the executor service. It holds
 # the proxy password and docker auth config, so only root may read it.
+# Inside the double quotes below, systemd treats only backslash and double
+# quote specially, so escape those two in the values that may contain them.
+# Tracing is off here so the password doesn't land in the console output.
+set +x
+SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD=$${SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD//\\/\\\\}
+SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD=$${SOURCEGRAPH_EXECUTOR_PROXY_PASSWORD//\"/\\\"}
+EXECUTOR_DOCKER_AUTH_CONFIG=$${EXECUTOR_DOCKER_AUTH_CONFIG//\\/\\\\}
+EXECUTOR_DOCKER_AUTH_CONFIG=$${EXECUTOR_DOCKER_AUTH_CONFIG//\"/\\\"}
+set -x
 install -m 600 /dev/null /etc/systemd/system/executor.env
 cat <<EOF >/etc/systemd/system/executor.env
 EXECUTOR_QUEUE_NAME="$${EXECUTOR_QUEUE_NAME}"
