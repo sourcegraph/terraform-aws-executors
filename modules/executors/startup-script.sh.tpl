@@ -12,9 +12,7 @@ set -x
 # Conditionally set below
 DOCKER_REGISTRY_NODE_EXPORTER_URL_LINE=''
 
-# If a docker registry mirror is configured, create a startup script
-# that will configure docker to use the mirror. This requires writing
-# a docker configuration file and restarting the service.
+# If a docker registry mirror is configured, let the jobs reach it.
 if [ "$${EXECUTOR_DOCKER_REGISTRY_MIRROR}" != '' ]; then
   # Allow access to the docker registry from the VM.
   IP=$(echo $${EXECUTOR_DOCKER_REGISTRY_MIRROR} | grep -oE '//(.*?):' | sed 's/[\/:]//g')
@@ -27,6 +25,17 @@ if [ "$${EXECUTOR_DOCKER_REGISTRY_MIRROR}" != '' ]; then
 
   if [ "$${DOCKER_REGISTRY_NODE_EXPORTER_URL}" != '' ]; then
     DOCKER_REGISTRY_NODE_EXPORTER_URL_LINE="DOCKER_REGISTRY_NODE_EXPORTER_URL=$${DOCKER_REGISTRY_NODE_EXPORTER_URL}"
+  fi
+
+  # In Firecracker mode the executor hands the mirror URL to the docker daemon
+  # inside each VM. In docker mode jobs run on this host's daemon, which only
+  # knows about the mirror if its own config says so. The AMI writes
+  # {"log-driver": "journald"}; keep that and add the mirror.
+  if [ "$${EXECUTOR_USE_FIRECRACKER}" != 'true' ]; then
+    cat <<EOF >/etc/docker/daemon.json
+{"log-driver": "journald", "registry-mirrors": ["$${EXECUTOR_DOCKER_REGISTRY_MIRROR}"]}
+EOF
+    systemctl restart docker
   fi
 fi
 

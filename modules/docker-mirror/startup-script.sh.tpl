@@ -41,31 +41,26 @@ CWCONFIG
   fi
 fi
 
-# Wait until the block device is attached.
-while true; do
+# The data volume is an NVMe device whose serial number is the volume ID
+# without its hyphen, and udev links it under /dev/disk/by-id. That path is
+# stable across reboots and device enumeration order, unlike the /dev/sdh
+# name from the attachment, which nothing on Ubuntu creates.
+# https://docs.aws.amazon.com/ebs/latest/userguide/identify-nvme-ebs-device.html
+DATA_DEVICE="/dev/disk/by-id/nvme-Amazon_Elastic_Block_Store_${replace(docker_storage_volume_id, "-", "")}"
+
+# Wait until the volume is attached.
+until test -e "$${DATA_DEVICE}"; do
   sleep 1
-  test -e /dev/nvme1n1 && break
 done
 
-# Alias the nvme devices to /dev/sdX.
-# https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/device_naming.html#available-ec2-device-names
-VOLUMES_NAME="$(find /dev -maxdepth 1 | grep -i 'nvme[0-21]n1$')"
-for VOLUME in $${VOLUMES_NAME}; do
-  ALIAS=$(sudo nvme id-ctrl -H -v "$${VOLUME}" | { grep -Po '/dev/(sd[b-z]|xvd[b-z])' || test $? = 1; })
-  if [ -n "$${ALIAS}" ]; then
-    sudo ln -s "$${VOLUME}" "$${ALIAS}"
-  fi
-done
-
-REALPATH="$(realpath /dev/sdh)"
-# Ensure /dev/sdh has a file system.
-if [ "$(sudo file -s "$REALPATH")" == "$REALPATH: data" ]; then
-  sudo mkfs.ext4 /dev/sdh
+# Ensure the volume has a file system.
+if [ -z "$(sudo blkid -s TYPE -o value "$${DATA_DEVICE}")" ]; then
+  sudo mkfs.ext4 "$${DATA_DEVICE}"
 fi
 
-# Mount /dev/sdh to /mnt/registry.
+# Mount the volume to /mnt/registry.
 sudo mkdir -p /mnt/registry
-echo "/dev/sdh /mnt/registry ext4 defaults 0 2" | sudo tee -a /etc/fstab
+echo "$${DATA_DEVICE} /mnt/registry ext4 defaults 0 2" | sudo tee -a /etc/fstab
 sudo mount -a
 sudo chown ubuntu:ubuntu /mnt/registry
 
