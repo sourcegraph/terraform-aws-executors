@@ -17,7 +17,7 @@ variable "resource_prefix" {
 variable "machine_image" {
   type        = string
   default     = ""
-  description = "Executor node machine disk image to use for creating the boot volume. Leave empty to use latest compatible with the Sourcegraph version."
+  description = "Executor node machine disk image to use for creating the boot volume. Leave empty to use the AMI built for the Sourcegraph version this module version was released with."
 }
 
 variable "machine_type" {
@@ -29,7 +29,7 @@ variable "machine_type" {
 variable "ami_version" {
   type        = string
   default     = ""
-  description = "Specify a Sourcegraph executor ami version to use rather than pulling latest"
+  description = "Sourcegraph version (e.g. v8.1.2687) whose executor AMI to use instead of the one this module version was released with"
 
   validation {
     condition     = can(regex("^v?(\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z-.]+)?(\\+[0-9A-Za-z-.]+)?)?$", var.ami_version))
