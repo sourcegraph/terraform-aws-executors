@@ -65,8 +65,8 @@ variable "executor_machine_type" {
 
 variable "executor_boot_disk_size" {
   type        = number
-  default     = 100 // 100GB
-  description = "Executor node disk size in GB"
+  default     = 100
+  description = "Executor node gp3 root volume size in GB. The volume does not grow on its own; changing this creates a new launch template version, and new instances expand the filesystem to fill the volume at first boot."
 }
 
 variable "executor_boot_disk_iops" {
