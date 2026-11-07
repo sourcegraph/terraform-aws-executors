@@ -73,7 +73,9 @@
                 "ec2:UpdateSecurityGroupRuleDescriptionsEgress",
                 "ec2:UpdateSecurityGroupRuleDescriptionsIngress",
                 "kms:CreateGrant",
+                "kms:ListGrants",
                 "kms:RetireGrant",
+                "kms:RevokeGrant",
                 "kms:TagResource",
                 "kms:UntagResource"
             ],
