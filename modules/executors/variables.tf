@@ -22,8 +22,8 @@ variable "machine_image" {
 
 variable "machine_type" {
   type        = string
-  default     = "m8i.16xlarge" // 64 vCPU, 256GB
-  description = "Executor node machine type. With use_firecracker, a non-bare-metal type must support nested virtualization (Intel C7i/M7i/R7i, C8i/M8i/R8i and their -flex and -id variants); bare metal types (*.metal) work as before."
+  default     = "m8i.2xlarge" // 8 vCPU, 32GB
+  description = "Executor node machine type. The default matches the 8 vCPU / 32 GB shape Sourcegraph Cloud runs executors on. With use_firecracker, a non-bare-metal type must support nested virtualization (Intel C7i/M7i/R7i, C8i/M8i/R8i and their -flex and -id variants); bare metal types (*.metal) work as before."
 }
 
 variable "ami_version" {
@@ -122,7 +122,7 @@ variable "maximum_runtime_per_job" {
 
 variable "maximum_num_jobs" {
   type        = number
-  default     = 18
+  default     = 2
   description = "The number of jobs to run concurrently per executor instance"
 }
 
@@ -188,7 +188,7 @@ variable "max_replicas" {
 
 variable "jobs_per_instance_scaling" {
   type        = number
-  default     = 360
+  default     = 20
   description = "The amount of jobs a single instance should have in queue. Used for autoscaling."
 }
 
