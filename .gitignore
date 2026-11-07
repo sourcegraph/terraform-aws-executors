@@ -2,3 +2,4 @@
 plan
 *.iml
 .idea
+.terraform.lock.hcl

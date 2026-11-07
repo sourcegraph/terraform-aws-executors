@@ -7,9 +7,5 @@
       "matchManagers": ["terraform"],
       "rangeStrategy": "widen"
     }
-  ],
-  "lockFileMaintenance": {
-    "description": "examples/ commit .terraform.lock.hcl so CI validates against a known provider build; refresh those locks on a schedule",
-    "enabled": true
-  }
+  ]
 }
