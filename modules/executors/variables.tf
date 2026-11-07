@@ -22,8 +22,8 @@ variable "machine_image" {
 
 variable "machine_type" {
   type        = string
-  default     = "c5n.metal" // 72 vCPU, 192GB
-  description = "Executor node machine type."
+  default     = "m8i.2xlarge" // 8 vCPU, 32GB
+  description = "Executor node machine type. The default matches the 8 vCPU / 32 GB shape Sourcegraph Cloud runs executors on. With use_firecracker, the type must be bare metal or support nested virtualization (Intel M7i/M8i/C7i/C8i/R7i/R8i/I7i/X8i and their -flex and -id variants); the module checks this against the EC2 API at plan time and enables nested virtualization on virtual types."
 }
 
 variable "ami_version" {
@@ -39,8 +39,8 @@ variable "ami_version" {
 
 variable "boot_disk_size" {
   type        = number
-  default     = 500
-  description = "Executor node disk size in GB."
+  default     = 100
+  description = "Executor node gp3 root volume size in GB. The volume does not grow on its own; changing this creates a new launch template version, and new instances expand the filesystem to fill the volume at first boot."
 }
 
 variable "boot_disk_iops" {
@@ -122,7 +122,7 @@ variable "maximum_runtime_per_job" {
 
 variable "maximum_num_jobs" {
   type        = number
-  default     = 18
+  default     = 2
   description = "The number of jobs to run concurrently per executor instance"
 }
 
@@ -188,7 +188,7 @@ variable "max_replicas" {
 
 variable "jobs_per_instance_scaling" {
   type        = number
-  default     = 360
+  default     = 20
   description = "The amount of jobs a single instance should have in queue. Used for autoscaling."
 }
 

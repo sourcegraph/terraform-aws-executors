@@ -7,6 +7,8 @@ locals {
   // Should be split into a queue/queues metric field
   metric_queue_val = var.queue_name != "" ? var.queue_name : replace(local.queue_names, ",", "_")
 
+  nested_virtualization_supported = contains(data.aws_ec2_instance_type.executor.supported_cpu_features, "nested-virtualization")
+
   security_group = {
     name = var.randomize_resource_names ? "${local.prefix}executors-${random_id.security_group[0].hex}" : "${var.resource_prefix}SourcegraphExecutorsMetricsAccess"
   }
@@ -201,6 +203,12 @@ data "aws_ami" "latest_ami" {
   }
 }
 
+# Firecracker needs KVM. Bare metal instances have it natively; virtual
+# instances only when nested virtualization is enabled at launch.
+data "aws_ec2_instance_type" "executor" {
+  instance_type = var.machine_type
+}
+
 data "aws_ami" "ami" {
   count       = var.ami_version == "" ? 0 : 1
   most_recent = true
@@ -233,6 +241,13 @@ resource "random_id" "launch_template" {
 # policy.
 resource "aws_launch_template" "executor" {
   instance_type = var.machine_type
+
+  dynamic "cpu_options" {
+    for_each = var.use_firecracker && !data.aws_ec2_instance_type.executor.bare_metal && local.nested_virtualization_supported ? [1] : []
+    content {
+      nested_virtualization = "enabled"
+    }
+  }
 
   # Order of precedence: machine_image > ami_version > latest_ami
   image_id = var.machine_image != "" ? var.machine_image : var.ami_version != "" ? data.aws_ami.ami.0.image_id : data.aws_ami.latest_ami.0.image_id
@@ -317,6 +332,11 @@ resource "aws_launch_template" "executor" {
     precondition {
       condition     = (var.sourcegraph_executor_proxy_password != "") != (var.sourcegraph_executor_proxy_password_secret_name != "")
       error_message = "Set exactly one of sourcegraph_executor_proxy_password or sourcegraph_executor_proxy_password_secret_name."
+    }
+
+    precondition {
+      condition     = !var.use_firecracker || data.aws_ec2_instance_type.executor.bare_metal || local.nested_virtualization_supported
+      error_message = "use_firecracker needs KVM: machine_type ${var.machine_type} is neither bare metal nor does it support nested virtualization. Use a *.metal type or one of the Intel M7i/M8i/C7i/C8i/R7i/R8i/I7i/X8i families (including -flex and -id variants)."
     }
   }
 
