@@ -234,6 +234,16 @@ resource "random_id" "launch_template" {
 resource "aws_launch_template" "executor" {
   instance_type = var.machine_type
 
+  # Firecracker needs KVM. Bare metal instances (*.metal, *.metal-NNxl) have
+  # it natively; virtual instances only when nested virtualization is enabled
+  # at launch, so set it for virtual instances running Firecracker.
+  dynamic "cpu_options" {
+    for_each = var.use_firecracker && length(regexall("\\.metal", var.machine_type)) == 0 ? [1] : []
+    content {
+      nested_virtualization = "enabled"
+    }
+  }
+
   # Order of precedence: machine_image > ami_version > latest_ami
   image_id = var.machine_image != "" ? var.machine_image : var.ami_version != "" ? data.aws_ami.ami.0.image_id : data.aws_ami.latest_ami.0.image_id
 

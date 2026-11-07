@@ -22,8 +22,8 @@ variable "machine_image" {
 
 variable "machine_type" {
   type        = string
-  default     = "c5n.metal" // 72 vCPU, 192GB
-  description = "Executor node machine type."
+  default     = "m8i.16xlarge" // 64 vCPU, 256GB
+  description = "Executor node machine type. With use_firecracker, a non-bare-metal type must support nested virtualization (Intel C7i/M7i/R7i, C8i/M8i/R8i and their -flex and -id variants); bare metal types (*.metal) work as before."
 }
 
 variable "ami_version" {
