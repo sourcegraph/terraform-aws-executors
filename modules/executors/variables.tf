@@ -11,7 +11,7 @@ variable "subnet_id" {
 variable "resource_prefix" {
   type        = string
   default     = ""
-  description = "An optional prefix to add to all resources created."
+  description = "An optional prefix to add to all resources created. To run more than one executors module in the same AWS account and region, give each a distinct prefix or set randomize_resource_names = true; otherwise the IAM role, launch template, autoscaling group, and CloudWatch log group names collide."
 }
 
 variable "machine_image" {
@@ -230,7 +230,7 @@ variable "docker_auth_config" {
 
 variable "randomize_resource_names" {
   type        = bool
-  description = "Use randomized names for resources. Deployments using the legacy naming convention will be updated in-place with randomized names when enabled."
+  description = "Use randomized names for resources. Deployments using the legacy naming convention will be updated in-place with randomized names when enabled. Required (or a distinct resource_prefix per module) to run more than one executors module in the same AWS account and region."
 }
 
 variable "permissions_boundary_arn" {
