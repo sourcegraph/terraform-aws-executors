@@ -6,6 +6,38 @@ set -euxo pipefail
 ${key}="${value}"
 %{ endfor ~}
 
+# Hardware GRO packets can fail software segmentation inside Firecracker guests.
+# systemd 250 introduced GenericReceiveOffloadHardware in .link files.
+systemd_version=$(systemctl --version | awk 'NR == 1 {print $2}')
+if [ "$systemd_version" -lt 250 ]; then
+  echo "Executor hosts require systemd 250 or later to disable hardware GRO." >&2
+  exit 1
+fi
+
+for interface in /sys/class/net/*; do
+  [ -L "$interface/device/driver" ] || continue
+  driver=$(basename "$(readlink "$interface/device/driver")")
+  [ "$driver" = "ena" ] || continue
+
+  # Preserve naming rules, including netplan files used only after a reboot.
+  for link_file in /usr/lib/systemd/network/*.link /run/systemd/network/*.link /etc/systemd/network/*.link; do
+    [ -f "$link_file" ] || continue
+    link_drop_in="/etc/systemd/network/$(basename "$link_file").d"
+    mkdir -p "$link_drop_in"
+    cat >"$link_drop_in/90-executor-offloads.conf" <<'EOF'
+[Link]
+GenericReceiveOffloadHardware=no
+EOF
+  done
+
+  # Startup runs after NIC initialization. Apply the setting on first boot too.
+  features=$(ethtool -k "$(basename "$interface")")
+  if grep -q '^rx-gro-hw: on' <<<"$features"; then
+    ethtool -K "$(basename "$interface")" rx-gro-hw off
+  fi
+done
+udevadm control --reload
+
 # Conditionally set below
 DOCKER_REGISTRY_NODE_EXPORTER_URL_LINE=''
 

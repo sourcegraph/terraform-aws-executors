@@ -22,6 +22,8 @@ The [single-executor example](https://github.com/sourcegraph/terraform-aws-execu
 
 ## Requirements
 
+Executor host images require **systemd 250 or later**, `udevadm`, and `ethtool`. Ubuntu 24.04 satisfies this systemd requirement; Ubuntu 22.04 with systemd 249 does not. Hardware GRO is disabled through systemd `.link` drop-ins and applied immediately on first boot.
+
 - [Terraform](https://www.terraform.io/) 
   - 4.1.0 and below: `~> 1.1.0`
   - 4.2.0 and above: `>= 1.1.0, < 2.0.0`
