@@ -23,6 +23,10 @@ The [single-executor example](https://github.com/sourcegraph/terraform-aws-execu
 
 ## Requirements
 
+Executor host images require **systemd 250 or later**, `udevadm`, and `ethtool`. Ubuntu 24.04 satisfies the systemd requirement; Ubuntu 22.04 with systemd 249 does not. The startup script checks the systemd version before starting the executor.
+
+The startup script disables hardware GRO on ENA network interfaces. It writes `GenericReceiveOffloadHardware=no` to drop-ins for the host's systemd `.link` files, including netplan-generated files and applies the setting immediately for the first boot. Software GRO remains unchanged. This is a preventive setting for AWS. The packet-segmentation failure was confirmed on GCP, not on AWS.
+
 - [Terraform](https://www.terraform.io/)
   - 4.1.0 and below: `~> 1.1.0`
   - 4.2.0 to 8.1.0: `>= 1.1.0, < 2.0.0`
